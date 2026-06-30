@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowRight, Play, Eye, Sparkles } from 'lucide-react';
 import DashboardPreview from './DashboardPreview';
 import InfinityBackground from '../decor/InfinityBackground';
+import StudyDecor from '../decor/StudyDecor';
 import { useApp } from '../../context/AppContext';
 
 export default function Hero() {
@@ -10,6 +11,7 @@ export default function Hero() {
   return (
     <section id="top" className="relative section-bg overflow-hidden">
       <InfinityBackground variant="hero" />
+      <StudyDecor density="normal" />
       <div className="absolute inset-0 grid-fade pointer-events-none" />
       <div className="relative max-w-[1280px] mx-auto px-6 pt-16 lg:pt-24 pb-20 lg:pb-28">
         <div className="grid lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-16 items-center">

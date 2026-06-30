@@ -26,7 +26,7 @@ function Stat({ label, value }) {
   );
 }
 
-function DaysStat({ days }) {
+function DaysStat({ days, subLabel }) {
   const has = days !== null && days !== undefined;
   return (
     <div className="rounded-xl border border-blue-200/70 p-4 bg-gradient-to-br from-blue-50 via-violet-50/50 to-transparent relative overflow-hidden">
@@ -36,7 +36,8 @@ function DaysStat({ days }) {
         {has ? days : '\u2014'}
         {has && <span className="text-[12px] font-medium text-slate-500 ml-1">{days === 1 ? 'day' : 'days'}</span>}
       </div>
-      {!has && <div className="relative text-[11px] text-slate-500 mt-0.5">Set in Settings</div>}
+      {subLabel && <div className="relative text-[11px] text-slate-500 mt-0.5 truncate">{subLabel}</div>}
+      {!has && !subLabel && <div className="relative text-[11px] text-slate-500 mt-0.5">Add a course</div>}
     </div>
   );
 }
@@ -72,8 +73,23 @@ export default function Dashboard({ go }) {
   const dailyGoal = state.settings?.dailyGoal || 10;
   const progressPct = Math.min(100, Math.round((questionsToday / dailyGoal) * 100));
 
-  const examDate = state.settings?.examDate;
-  const examCountdown = examDate ? Math.max(0, Math.ceil((new Date(examDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null;
+  // Compute nearest upcoming exam from courses (fallback to global settings.examDate)
+  const courseExams = useMemo(() => {
+    const list = (state.courses || []).filter((c) => c.examDate).map((c) => ({
+      name: c.name || c.subject,
+      subject: c.subject,
+      date: c.examDate,
+      days: Math.max(0, Math.ceil((new Date(c.examDate + 'T00:00:00').getTime() - Date.now()) / (1000 * 60 * 60 * 24))),
+      status: c.status,
+    })).sort((a, b) => a.days - b.days);
+    return list;
+  }, [state.courses]);
+
+  const fallbackDate = state.settings?.examDate;
+  const fallbackDays = fallbackDate ? Math.max(0, Math.ceil((new Date(fallbackDate + 'T00:00:00').getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null;
+  const nearest = courseExams[0];
+  const examCountdown = nearest ? nearest.days : fallbackDays;
+  const examLabel = nearest ? nearest.name : (fallbackDate ? new Date(fallbackDate).toLocaleDateString() : null);
 
   return (
     <div className="flex flex-col gap-6">
@@ -87,7 +103,7 @@ export default function Dashboard({ go }) {
           <Ring value={stats.readiness} />
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
-          <DaysStat days={examCountdown} />
+          <DaysStat days={examCountdown} subLabel={examLabel} />
           <Stat label="Study streak" value={`${state.streak || 0} days`} />
           <Stat label="Questions answered" value={stats.total} />
           <Stat label="Worksheets completed" value={stats.sheets} />
@@ -103,8 +119,25 @@ export default function Dashboard({ go }) {
           </div>
         </div>
         <div className="rounded-xl border border-[color:var(--color-border)] p-5 bg-white">
-          <div className="eyebrow-muted mb-2 flex items-center gap-1.5"><CalendarClock className="w-3.5 h-3.5 text-blue-600" /> Exam date</div>
-          <div className="text-[15px] text-slate-800">{state.settings?.examDate ? new Date(state.settings.examDate).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'Add an exam date in Settings'}</div>
+          <div className="eyebrow-muted mb-3 flex items-center gap-1.5"><CalendarClock className="w-3.5 h-3.5 text-blue-600" /> Upcoming exams</div>
+          {courseExams.length === 0 ? (
+            <button onClick={() => go('courses')} className="text-[14px] text-violet-700 hover:text-violet-900 transition-colors">Add a course to set per-subject exam dates &rarr;</button>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {courseExams.slice(0, 4).map((c) => (
+                <div key={c.name + c.date} className="flex items-center justify-between gap-3 px-3 py-2 rounded-md border border-[color:var(--color-border)]">
+                  <div className="min-w-0">
+                    <div className="text-[13.5px] font-medium text-slate-900 truncate">{c.name}</div>
+                    <div className="text-[11.5px] text-slate-500">{new Date(c.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[16px] font-semibold tabular-nums text-slate-900">{c.days}</div>
+                    <div className="text-[10px] uppercase tracking-wider font-semibold text-slate-500">days</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

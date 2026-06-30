@@ -13,7 +13,8 @@ import Profile from './Profile';
 import SettingsView from './SettingsView';
 import MyCourses from './MyCourses';
 import TutorialOverlay from './TutorialOverlay';
-import OnboardingFlow from './OnboardingFlow';
+import CourseWizard from './CourseWizard';
+import QuestionBank from './QuestionBank';
 import { toast } from 'sonner';
 
 const NAV = [
@@ -21,6 +22,7 @@ const NAV = [
   { key: 'courses', label: 'My Courses', emoji: '\u{1F393}' },
   { key: 'study', label: 'Start Studying', emoji: '\u{1F9E0}' },
   { key: 'worksheets', label: 'Worksheets', emoji: '\u270F\uFE0F' },
+  { key: 'qbank', label: 'Question Bank', emoji: '\u{1F4DA}' },
   { key: 'history', label: 'Worksheet History', emoji: '\u23F3' },
   { key: 'progress', label: 'Progress', emoji: '\u{1F4C8}' },
   { key: 'strengths', label: 'Strengths & Weaknesses', emoji: '\u{1F4AA}' },
@@ -42,7 +44,7 @@ function parseHash(hash) {
 }
 
 export default function AppShell({ hash }) {
-  const { state, logout, toggleTheme, restartTutorial, resetProgress } = useApp();
+  const { state, logout, toggleTheme, restartTutorial, restartOnboarding, resetProgress } = useApp();
   const { key: active, params } = parseHash(hash);
   const current = NAV.find((n) => n.key === active) || NAV[0];
 
@@ -54,6 +56,7 @@ export default function AppShell({ hash }) {
     case 'courses': content = <MyCourses />; break;
     case 'study': content = <StartStudying go={go} subjectParam={params.subject} />; break;
     case 'worksheets': content = <Worksheets go={go} />; break;
+    case 'qbank': content = <QuestionBank go={go} subjectParam={params.subject} />; break;
     case 'history': content = <WorksheetHistory />; break;
     case 'progress': content = <ProgressView />; break;
     case 'strengths': content = <Strengths />; break;
@@ -71,9 +74,10 @@ export default function AppShell({ hash }) {
 
   const resetDemo = () => {
     resetProgress();
+    restartOnboarding();
     restartTutorial();
     window.location.hash = '#dashboard';
-    toast.success('Demo reset — starting tour from the top');
+    toast.success('Demo reset — starting setup from the top');
   };
 
   return (
@@ -163,7 +167,7 @@ export default function AppShell({ hash }) {
         <div className="px-8 py-7 max-w-[1280px]">{content}</div>
       </main>
 
-      {showOnboarding && <OnboardingFlow />}
+      {showOnboarding && <CourseWizard mode="onboarding" />}
       {showTutorial && <TutorialOverlay />}
     </div>
   );
