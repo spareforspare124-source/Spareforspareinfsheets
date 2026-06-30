@@ -54,7 +54,7 @@ export function AppProvider({ children }) {
     setState((s) => ({
       ...s,
       user: { name: 'Demo Student', email: 'demo@infinitysheets.app', examTrack: 'CBSE', isDemo: true },
-      tutorialDone: true,
+      // keep tutorialDone as-is so first-time demo users still get the guided tour
     }));
   }, []);
 

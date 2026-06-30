@@ -1,5 +1,5 @@
 import React from 'react';
-import { Infinity, LayoutDashboard, BookOpen, FileText, TrendingUp, Target, AlertCircle, User, Settings as SettingsIcon, LogOut, Sparkles, History, GraduationCap, Moon, Sun, Eye, X } from 'lucide-react';
+import { Infinity, LogOut, Moon, Sun, Eye, X, Sparkles, RotateCcw } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import Dashboard from './Dashboard';
 import StartStudying from './StartStudying';
@@ -12,20 +12,21 @@ import Recommendations from './Recommendations';
 import Profile from './Profile';
 import SettingsView from './SettingsView';
 import MyCourses from './MyCourses';
-import Tutorial from './Tutorial';
+import TutorialOverlay from './TutorialOverlay';
+import { toast } from 'sonner';
 
 const NAV = [
-  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, emoji: '\u{1F680}' },
-  { key: 'courses', label: 'My Courses', icon: GraduationCap, emoji: '\u{1F393}' },
-  { key: 'study', label: 'Start Studying', icon: BookOpen, emoji: '\u{1F9E0}' },
-  { key: 'worksheets', label: 'Worksheets', icon: FileText, emoji: '\u270F\uFE0F' },
-  { key: 'history', label: 'Worksheet History', icon: History, emoji: '\u23F3' },
-  { key: 'progress', label: 'Progress', icon: TrendingUp, emoji: '\u{1F4C8}' },
-  { key: 'strengths', label: 'Strengths & Weaknesses', icon: Target, emoji: '\u{1F4AA}' },
-  { key: 'recommendations', label: 'Smart Recommendations', icon: Sparkles, emoji: '\u2728' },
-  { key: 'mistakes', label: 'Mistake History', icon: AlertCircle, emoji: '\u{1F9F1}' },
-  { key: 'profile', label: 'Profile', icon: User, emoji: '\u{1F464}' },
-  { key: 'settings', label: 'Settings', icon: SettingsIcon, emoji: '\u2699\uFE0F' },
+  { key: 'dashboard', label: 'Dashboard', emoji: '\u{1F680}' },
+  { key: 'courses', label: 'My Courses', emoji: '\u{1F393}' },
+  { key: 'study', label: 'Start Studying', emoji: '\u{1F9E0}' },
+  { key: 'worksheets', label: 'Worksheets', emoji: '\u270F\uFE0F' },
+  { key: 'history', label: 'Worksheet History', emoji: '\u23F3' },
+  { key: 'progress', label: 'Progress', emoji: '\u{1F4C8}' },
+  { key: 'strengths', label: 'Strengths & Weaknesses', emoji: '\u{1F4AA}' },
+  { key: 'recommendations', label: 'Smart Recommendations', emoji: '\u2728' },
+  { key: 'mistakes', label: 'Mistake History', emoji: '\u{1F9F1}' },
+  { key: 'profile', label: 'Profile', emoji: '\u{1F464}' },
+  { key: 'settings', label: 'Settings', emoji: '\u2699\uFE0F' },
 ];
 
 function parseHash(hash) {
@@ -40,15 +41,11 @@ function parseHash(hash) {
 }
 
 export default function AppShell({ hash }) {
-  const { state, logout, toggleTheme } = useApp();
+  const { state, logout, toggleTheme, restartTutorial, resetProgress } = useApp();
   const { key: active, params } = parseHash(hash);
   const current = NAV.find((n) => n.key === active) || NAV[0];
 
   const go = (k) => { window.location.hash = `#${k}`; };
-
-  if (!state.tutorialDone && active !== 'settings') {
-    return <Tutorial onDone={() => go('dashboard')} />;
-  }
 
   let content = null;
   switch (current.key) {
@@ -68,6 +65,14 @@ export default function AppShell({ hash }) {
 
   const isDemo = !!state.user?.isDemo;
   const isDark = state.theme === 'dark';
+  const showTutorial = !state.tutorialDone;
+
+  const resetDemo = () => {
+    resetProgress();
+    restartTutorial();
+    window.location.hash = '#dashboard';
+    toast.success('Demo reset — starting tour from the top');
+  };
 
   return (
     <div className="min-h-screen section-bg grid grid-cols-[230px_1fr]">
@@ -85,26 +90,28 @@ export default function AppShell({ hash }) {
         </div>
         <nav className="relative flex-1 px-3 flex flex-col gap-0.5 overflow-y-auto">
           {NAV.map((n) => {
-            const Icon = n.icon;
             const isActive = current.key === n.key;
             return (
-              <button key={n.key} onClick={() => go(n.key)}
-                className={`text-left text-[13.5px] px-3 py-2 rounded-lg flex items-center gap-2.5 transition-colors ${isActive ? 'bg-gradient-to-r from-violet-50 to-blue-50 text-violet-700 font-medium' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}>
-                <span className={`w-6 h-6 rounded-md flex items-center justify-center ${isActive ? 'bg-white shadow-sm' : ''}`}>
-                  <Icon className="w-4 h-4" />
-                </span>
+              <button key={n.key} data-nav-key={n.key} onClick={() => go(n.key)}
+                className={`text-left text-[13.5px] px-3 py-2 rounded-lg flex items-center gap-2.5 transition-colors ${isActive ? 'bg-gradient-to-r from-violet-50 to-blue-50 text-violet-700 font-medium' : 'text-slate-700 hover:bg-slate-200/70 hover:text-slate-900'}`}>
+                <span className="text-[16px] leading-none w-5 text-center">{n.emoji}</span>
                 <span className="flex-1">{n.label}</span>
-                <span className="text-[12px] opacity-60">{n.emoji}</span>
               </button>
             );
           })}
         </nav>
         <div className="relative px-3 pb-4 pt-4 border-t border-[color:var(--color-border)] flex flex-col gap-1">
-          <button onClick={toggleTheme} className="w-full text-left text-[13.5px] px-3 py-2 rounded-lg flex items-center gap-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+          <button onClick={toggleTheme} className="w-full text-left text-[13.5px] px-3 py-2 rounded-lg flex items-center gap-2.5 text-slate-700 hover:bg-slate-200/70 hover:text-slate-900 transition-colors">
             {isDark ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-blue-600" />}
             <span>{isDark ? 'Light mode' : 'Dark mode'}</span>
           </button>
-          <button onClick={() => { logout(); window.location.hash = ''; }} className="w-full text-left text-[13.5px] px-3 py-2 rounded-lg flex items-center gap-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+          {isDemo && (
+            <button onClick={resetDemo} className="w-full text-left text-[13.5px] px-3 py-2 rounded-lg flex items-center gap-2.5 text-slate-700 hover:bg-slate-200/70 hover:text-slate-900 transition-colors">
+              <RotateCcw className="w-4 h-4 text-violet-600" />
+              <span>Reset demo</span>
+            </button>
+          )}
+          <button onClick={() => { logout(); window.location.hash = ''; }} className="w-full text-left text-[13.5px] px-3 py-2 rounded-lg flex items-center gap-2.5 text-slate-700 hover:bg-slate-200/70 hover:text-slate-900 transition-colors">
             <LogOut className="w-4 h-4" />
             <span>{isDemo ? 'Exit demo' : 'Logout'}</span>
           </button>
@@ -118,9 +125,14 @@ export default function AppShell({ hash }) {
                 <span className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-blue-600 text-white flex items-center justify-center"><Eye className="w-3.5 h-3.5" /></span>
                 <span><span className="font-semibold">Demo mode</span> · explore the app without an account. Progress saves on this device.</span>
               </div>
-              <button onClick={() => { logout(); window.location.hash = ''; }} className="inline-flex items-center gap-1 text-[12.5px] font-medium text-slate-600 hover:text-slate-900">
-                <X className="w-3.5 h-3.5" /> Exit
-              </button>
+              <div className="flex items-center gap-1">
+                <button onClick={resetDemo} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[12.5px] font-medium text-violet-700 bg-white border border-violet-200 hover:bg-violet-50 transition-colors">
+                  <RotateCcw className="w-3.5 h-3.5" /> Reset demo
+                </button>
+                <button onClick={() => { logout(); window.location.hash = ''; }} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[12.5px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition-colors">
+                  <X className="w-3.5 h-3.5" /> Exit
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -133,7 +145,7 @@ export default function AppShell({ hash }) {
             <h1 className="text-[28px] font-semibold tracking-tight text-slate-900">{current.label}</h1>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={toggleTheme} className="w-9 h-9 rounded-lg border border-[color:var(--color-border)] bg-white text-slate-600 hover:text-slate-900 flex items-center justify-center transition-colors" aria-label="Toggle theme">
+            <button onClick={toggleTheme} className="w-9 h-9 rounded-lg border border-[color:var(--color-border)] bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition-colors" aria-label="Toggle theme">
               {isDark ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-blue-600" />}
             </button>
             {current.key === 'dashboard' && (
@@ -148,6 +160,8 @@ export default function AppShell({ hash }) {
         </header>
         <div className="px-8 py-7 max-w-[1280px]">{content}</div>
       </main>
+
+      {showTutorial && <TutorialOverlay />}
     </div>
   );
 }

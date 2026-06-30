@@ -1,5 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { Sparkles, CalendarClock } from 'lucide-react';
+import StudyPlanModal from './StudyPlanModal';
 
 function Ring({ value = 0 }) {
   const r = 32;
@@ -18,9 +20,24 @@ function Ring({ value = 0 }) {
 
 function Stat({ label, value }) {
   return (
-    <div className="rounded-xl border border-zinc-200 p-4">
-      <div className="text-[10px] tracking-[0.14em] uppercase font-semibold text-zinc-500">{label}</div>
-      <div className="text-[20px] font-semibold mt-1 text-zinc-900">{value}</div>
+    <div className="rounded-xl border border-[color:var(--color-border)] p-4 bg-white">
+      <div className="text-[10px] tracking-[0.14em] uppercase font-semibold text-slate-500">{label}</div>
+      <div className="text-[20px] font-semibold mt-1 text-slate-900">{value}</div>
+    </div>
+  );
+}
+
+function DaysStat({ days }) {
+  const has = days !== null && days !== undefined;
+  return (
+    <div className="rounded-xl border border-blue-200/70 p-4 bg-gradient-to-br from-blue-50 via-violet-50/50 to-transparent relative overflow-hidden">
+      <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full bg-blue-500/20 blur-2xl pointer-events-none" />
+      <div className="relative text-[10px] tracking-[0.14em] uppercase font-semibold text-blue-700">Days until exam</div>
+      <div className="relative text-[24px] font-semibold mt-1 text-slate-900 tabular-nums">
+        {has ? days : '\u2014'}
+        {has && <span className="text-[12px] font-medium text-slate-500 ml-1">{days === 1 ? 'day' : 'days'}</span>}
+      </div>
+      {!has && <div className="relative text-[11px] text-slate-500 mt-0.5">Set in Settings</div>}
     </div>
   );
 }
@@ -28,6 +45,7 @@ function Stat({ label, value }) {
 export default function Dashboard({ go }) {
   const { state } = useApp();
   const ws = state.worksheets || [];
+  const [planOpen, setPlanOpen] = useState(false);
 
   const stats = useMemo(() => {
     const total = ws.reduce((s, w) => s + (w.total || 0), 0);
@@ -71,38 +89,43 @@ export default function Dashboard({ go }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="rounded-2xl border border-zinc-200 p-6">
+      <div className="rounded-2xl border border-[color:var(--color-border)] p-6 bg-white">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="eyebrow-muted mb-2">Your study overview</div>
             <h2 className="text-[28px] font-semibold tracking-tight">Welcome back, {state.user?.name || 'Student'}.</h2>
-            <p className="text-[14px] text-zinc-500 mt-1">Here is your study overview.</p>
+            <p className="text-[14px] text-slate-500 mt-1">Here is your study overview.</p>
           </div>
           <Ring value={stats.readiness} />
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
-          <Stat label="Readiness score" value={`${stats.readiness}%`} />
+          <DaysStat days={examCountdown} />
           <Stat label="Study streak" value={`${state.streak || 0} days`} />
           <Stat label="Questions answered" value={stats.total} />
           <Stat label="Worksheets completed" value={stats.sheets} />
         </div>
-        <div className="mt-5 rounded-xl border border-zinc-200 px-5 py-4 border-l-[3px] border-l-violet-500">
-          <div className="eyebrow-muted mb-1">Recommended action</div>
-          <div className="text-[14.5px] text-zinc-800">{recommended}</div>
+        <div className="mt-5 grid lg:grid-cols-[1fr_auto] gap-3 items-stretch">
+          <div className="rounded-xl border border-[color:var(--color-border)] px-5 py-4 border-l-[3px] border-l-violet-500 bg-gradient-to-r from-violet-50/40 to-transparent">
+            <div className="eyebrow-muted mb-1">Recommended action</div>
+            <div className="text-[14.5px] text-slate-800">{recommended}</div>
+          </div>
+          <button onClick={() => setPlanOpen(true)} className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-[14px] font-semibold text-white bg-gradient-to-r from-violet-600 via-blue-600 to-cyan-500 shadow-[0_12px_30px_-12px_rgba(124,58,237,0.55)] hover:opacity-95 transition-opacity">
+            <Sparkles className="w-4 h-4" /> Create plan with AI
+          </button>
         </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
-        <div className="rounded-xl border border-zinc-200 p-5">
-          <div className="eyebrow-muted mb-2">Today’s goal</div>
+        <div className="rounded-xl border border-[color:var(--color-border)] p-5 bg-white">
+          <div className="eyebrow-muted mb-2">Today&rsquo;s goal</div>
           <div className="text-[18px] font-semibold">{questionsToday} / {dailyGoal} questions</div>
-          <div className="mt-3 h-1.5 rounded-full bg-zinc-100 overflow-hidden">
-            <div className="h-full bg-violet-500 transition-all" style={{ width: `${progressPct}%` }} />
+          <div className="mt-3 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-violet-500 to-blue-500 transition-all" style={{ width: `${progressPct}%` }} />
           </div>
         </div>
-        <div className="rounded-xl border border-zinc-200 p-5">
-          <div className="eyebrow-muted mb-2">Exam countdown</div>
-          <div className="text-[15px] text-zinc-800">{examCountdown !== null ? `${examCountdown} days remaining` : 'Add an exam date in Settings'}</div>
+        <div className="rounded-xl border border-[color:var(--color-border)] p-5 bg-white">
+          <div className="eyebrow-muted mb-2 flex items-center gap-1.5"><CalendarClock className="w-3.5 h-3.5 text-blue-600" /> Exam date</div>
+          <div className="text-[15px] text-slate-800">{state.settings?.examDate ? new Date(state.settings.examDate).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'Add an exam date in Settings'}</div>
         </div>
       </div>
 
@@ -137,6 +160,8 @@ export default function Dashboard({ go }) {
         <button onClick={() => go('worksheets')} className="btn-violet px-5 py-2.5 rounded-lg text-[14px] font-medium">Create a worksheet</button>
         <button onClick={() => go('study')} className="btn-outline-dark px-5 py-2.5 rounded-lg text-[14px] font-medium">Browse subjects</button>
       </div>
+
+      <StudyPlanModal open={planOpen} onClose={() => setPlanOpen(false)} />
     </div>
   );
 }
