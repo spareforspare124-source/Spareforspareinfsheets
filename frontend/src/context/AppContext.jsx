@@ -3,14 +3,15 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 const STORAGE_KEY = 'infinitysheets_state_v1';
 
 const defaultState = {
-  user: null, // { name, email, examTrack, isDemo? }
+  user: null, // { name, email, examTrack, subjects?, isDemo? }
   worksheets: [],
   mistakes: [],
   courses: [],
   streak: 0,
   lastStudyDate: null,
   tutorialDone: false,
-  theme: 'light', // 'light' | 'dark'
+  onboardingDone: false,
+  theme: 'light',
   settings: {
     dailyGoal: 10,
     defaultDifficulty: 'Mixed exam practice',
@@ -53,9 +54,22 @@ export function AppProvider({ children }) {
   const startDemo = useCallback(() => {
     setState((s) => ({
       ...s,
-      user: { name: 'Demo Student', email: 'demo@infinitysheets.app', examTrack: 'CBSE', isDemo: true },
-      // keep tutorialDone as-is so first-time demo users still get the guided tour
+      user: { name: 'Demo Student', email: 'demo@infinitysheets.app', examTrack: 'CBSE', isDemo: true, subjects: [] },
+      onboardingDone: true, // demo skips onboarding
     }));
+  }, []);
+
+  const completeOnboarding = useCallback(({ examTrack, examDate, subjects }) => {
+    setState((s) => ({
+      ...s,
+      user: { ...s.user, examTrack: examTrack || s.user?.examTrack, subjects: subjects || [] },
+      settings: { ...s.settings, examDate: examDate || s.settings.examDate },
+      onboardingDone: true,
+    }));
+  }, []);
+
+  const restartOnboarding = useCallback(() => {
+    setState((s) => ({ ...s, onboardingDone: false }));
   }, []);
 
   const signup = useCallback((user) => {
@@ -151,7 +165,7 @@ export function AppProvider({ children }) {
   }, []);
 
   return (
-    <AppContext.Provider value={{ state, loaded, signup, login, logout, updateProfile, updateSettings, resetProgress, deleteAccount, recordWorksheet, removeMistake, finishTutorial, restartTutorial, addCourse, removeCourse, updateCourse, toggleTheme, startDemo }}>
+    <AppContext.Provider value={{ state, loaded, signup, login, logout, updateProfile, updateSettings, resetProgress, deleteAccount, recordWorksheet, removeMistake, finishTutorial, restartTutorial, addCourse, removeCourse, updateCourse, toggleTheme, startDemo, completeOnboarding, restartOnboarding }}>
       {children}
     </AppContext.Provider>
   );

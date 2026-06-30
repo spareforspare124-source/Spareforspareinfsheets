@@ -13,6 +13,7 @@ import Profile from './Profile';
 import SettingsView from './SettingsView';
 import MyCourses from './MyCourses';
 import TutorialOverlay from './TutorialOverlay';
+import OnboardingFlow from './OnboardingFlow';
 import { toast } from 'sonner';
 
 const NAV = [
@@ -65,7 +66,8 @@ export default function AppShell({ hash }) {
 
   const isDemo = !!state.user?.isDemo;
   const isDark = state.theme === 'dark';
-  const showTutorial = !state.tutorialDone;
+  const showOnboarding = !state.onboardingDone;
+  const showTutorial = state.onboardingDone && !state.tutorialDone;
 
   const resetDemo = () => {
     resetProgress();
@@ -161,6 +163,7 @@ export default function AppShell({ hash }) {
         <div className="px-8 py-7 max-w-[1280px]">{content}</div>
       </main>
 
+      {showOnboarding && <OnboardingFlow />}
       {showTutorial && <TutorialOverlay />}
     </div>
   );

@@ -27,7 +27,9 @@ const toneBadge = {
 export default function StartStudying({ go, subjectParam }) {
   const { state } = useApp();
   const track = state.user?.examTrack || 'SSLC';
-  const list = SUBJECTS[track] || [];
+  const all = SUBJECTS[track] || [];
+  const selected = state.user?.subjects && state.user.subjects.length ? state.user.subjects.filter((s) => all.includes(s)) : all;
+  const list = selected;
 
   if (subjectParam) {
     const decoded = decodeURIComponent(subjectParam);

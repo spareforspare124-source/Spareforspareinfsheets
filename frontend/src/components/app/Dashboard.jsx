@@ -1,7 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Sparkles, CalendarClock } from 'lucide-react';
-import StudyPlanModal from './StudyPlanModal';
+import { CalendarClock } from 'lucide-react';
 
 function Ring({ value = 0 }) {
   const r = 32;
@@ -45,7 +44,6 @@ function DaysStat({ days }) {
 export default function Dashboard({ go }) {
   const { state } = useApp();
   const ws = state.worksheets || [];
-  const [planOpen, setPlanOpen] = useState(false);
 
   const stats = useMemo(() => {
     const total = ws.reduce((s, w) => s + (w.total || 0), 0);
@@ -66,12 +64,6 @@ export default function Dashboard({ go }) {
     return { topics: t };
   }, [ws]);
 
-  const weakTopic = useMemo(() => {
-    const entries = Object.entries(topics).map(([k, v]) => ({ k, acc: v.total ? v.correct / v.total : 1, ...v }));
-    entries.sort((a, b) => a.acc - b.acc);
-    return entries[0];
-  }, [topics]);
-
   const strongTopics = useMemo(() => Object.entries(topics).map(([k, v]) => ({ k, acc: v.total ? v.correct / v.total : 0 })).filter((e) => e.acc >= 0.7).slice(0, 3), [topics]);
   const weakTopics = useMemo(() => Object.entries(topics).map(([k, v]) => ({ k, acc: v.total ? v.correct / v.total : 0 })).filter((e) => e.acc < 0.7).slice(0, 3), [topics]);
 
@@ -82,10 +74,6 @@ export default function Dashboard({ go }) {
 
   const examDate = state.settings?.examDate;
   const examCountdown = examDate ? Math.max(0, Math.ceil((new Date(examDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null;
-
-  const recommended = weakTopic
-    ? `Complete a 10-question ${weakTopic.k} worksheet.`
-    : (ws.length === 0 ? 'Generate your first worksheet to start building recommendations.' : 'Try a new topic in your subject.');
 
   return (
     <div className="flex flex-col gap-6">
@@ -103,15 +91,6 @@ export default function Dashboard({ go }) {
           <Stat label="Study streak" value={`${state.streak || 0} days`} />
           <Stat label="Questions answered" value={stats.total} />
           <Stat label="Worksheets completed" value={stats.sheets} />
-        </div>
-        <div className="mt-5 grid lg:grid-cols-[1fr_auto] gap-3 items-stretch">
-          <div className="rounded-xl border border-[color:var(--color-border)] px-5 py-4 border-l-[3px] border-l-violet-500 bg-gradient-to-r from-violet-50/40 to-transparent">
-            <div className="eyebrow-muted mb-1">Recommended action</div>
-            <div className="text-[14.5px] text-slate-800">{recommended}</div>
-          </div>
-          <button onClick={() => setPlanOpen(true)} className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-[14px] font-semibold text-white bg-gradient-to-r from-violet-600 via-blue-600 to-cyan-500 shadow-[0_12px_30px_-12px_rgba(124,58,237,0.55)] hover:opacity-95 transition-opacity">
-            <Sparkles className="w-4 h-4" /> Create plan with AI
-          </button>
         </div>
       </div>
 
@@ -160,8 +139,6 @@ export default function Dashboard({ go }) {
         <button onClick={() => go('worksheets')} className="btn-violet px-5 py-2.5 rounded-lg text-[14px] font-medium">Create a worksheet</button>
         <button onClick={() => go('study')} className="btn-outline-dark px-5 py-2.5 rounded-lg text-[14px] font-medium">Browse subjects</button>
       </div>
-
-      <StudyPlanModal open={planOpen} onClose={() => setPlanOpen(false)} />
     </div>
   );
 }
