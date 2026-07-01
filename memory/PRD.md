@@ -6,58 +6,62 @@ Clone `https://infinitysheets.netlify.app/#dashboard-view` as a pixel-perfect, f
 - Personalized exam prep (Worksheets, Mistake tracking, Subject Overviews)
 - Dark Mode & Demo Mode
 - Multi-subject Course Onboarding wizard, interactive Tutorial, Progress analytics
-- Frontend-only w/ localStorage now; FastAPI/MongoDB + AI generation later
+- Frontend-only w/ localStorage now; backend + AI explicitly *deferred* by user
 
 ## Tech Stack
 - **Frontend**: React + TailwindCSS + Shadcn UI + Recharts + Lucide-React
 - **State**: React Context (`AppContext.jsx`) + localStorage persistence
-- **Backend**: FastAPI + Motor (MongoDB async) — boilerplate only, not yet wired to frontend
-- **Planned**: Emergent LLM Key for adaptive worksheet generation
+- **Backend**: FastAPI + Motor (MongoDB) — boilerplate only, not wired to frontend
+- **Worksheets**: 100% placeholder questions from `QUESTION_BANK` / `FALLBACK_QUESTIONS` (no AI, per user)
 
-## Design System (as of Feb 2026)
+## Design System
 - **Primary**: Royal Blue `#2563eb`
 - **Secondary**: Purple `#7c3aed`
-- **Tertiary**: Red `#dc2626`
+- **Tertiary**: Red `#dc2626` (kept as palette token but used sparingly)
 - **Success**: Emerald `#10b981`
-- **Dark Mode**: True off-black `#0a0a0a` (bg), `#171717` (cards)
+- **Dark Mode**: True off-black (`#0a0a0a` bg, `#171717` cards, `#262626` borders)
 - **No gradients, no glow shadows, no blur decorations** — clean flat design
-- **No emojis** — all iconography via Lucide-React; subject badges use letter symbols (M, P, C, B, etc.)
-- Sharp corners (custom rounded overrides in CSS), Instrument Serif for italic accents
+- **No emojis** — all iconography via Lucide-React; subject badges use letter symbols
+- Sharp corners (custom rounded overrides), Instrument Serif for italic accents
 
-## Completed
-- Landing page (Hero, WhatIs, HowItWorks, Features, Research, ExamPathways, Pricing, Testimonials, Signup, FinalCTA, Footer)
-- Dashboard app (AppShell, Dashboard, MyCourses, StartStudying, Worksheets, WorksheetHistory, QuestionBank, ProgressView, Strengths, Mistakes, Recommendations, Profile, Settings, SubjectOverview)
+## Completed (Feb 2026)
+- Full landing page (Hero, WhatIs, HowItWorks, Features, Research, ExamPathways, Pricing, Testimonials, Signup, FinalCTA, Footer)
+- Full dashboard app (12 pages)
 - Multi-subject Course Wizard with per-subject exam dates
 - 5-step interactive tutorial overlay with DOM highlighting
 - Dark Mode + Demo Mode + Reset Demo flow
 - Line-chart Progress View tracking % deltas over time
 - Hand-drawn laboratory/cobweb empty state scenes
-- **Feb 2026**: Color palette swap → Royal Blue primary / Purple secondary / Red tertiary; removed all gradients, glows, and emojis (Lucide icons + letter symbols); dark mode changed to true off-black
+- Color palette swap (Royal Blue / Purple / Red)
+- Removed all gradients, glows, blur decorations, and emojis
+- **P2 refactor**: Split AppShell → Sidebar + DemoBanner + TopHeader; SubjectOverview → SubjectHero + TopicsList + SubjectSidePanels; StudyPlanModal → PlanGeneratingState + PlanDayCard + useMockStudyPlan hook
+- **P2 cleanup**: Stable keys in list maps, removed unused eslint-disable directives
 
 ## In Progress
 - None
 
-## P0 Backlog — Backend Integration & AI
-- Phase 1: FastAPI models & endpoints (Users, Courses, Worksheets, Progress, Mistakes)
-- Phase 2: Emergent LLM Key integration for AI-generated worksheets
-- Phase 3: Wire AppContext.jsx to real API, remove localStorage mocks
+## Deferred by User
+- Backend integration (FastAPI models + endpoints for Users/Courses/Worksheets/Progress/Mistakes)
+- AI worksheet generation (Emergent LLM Key) — explicitly deferred, worksheets stay placeholder-only
+- Authentication (JWT or Google OAuth) — explicitly deferred
 
-## P1 Backlog — Authentication
-- Real registration/login (JWT custom or Emergent Google OAuth)
-
-## P2 Backlog — Refactoring
-- Split AppShell.jsx, SubjectOverview.jsx, StudyPlanModal.jsx into sub-components
-- Replace index-as-key with stable UUIDs in list maps
-- Fix minor React Hook useMemo dependency warnings in QuestionBank/ProgressView
+## Backlog
+- Deeper red integration if user changes their mind (currently just palette-level accents)
+- Progress view: filter by date range
+- Worksheet history: search + pagination
 
 ## Key Files
 - `/app/frontend/src/index.css` — CSS variables, dark mode overrides, global gradient/glow suppression
-- `/app/frontend/src/data/mock.js` — SUBJECT_INFO (letter symbols), SUBJECTS, question bank
+- `/app/frontend/src/data/mock.js` — SUBJECT_INFO (letter symbols), SUBJECTS, QUESTION_BANK, FALLBACK_QUESTIONS
 - `/app/frontend/src/context/AppContext.jsx` — global state + localStorage
-- `/app/frontend/src/components/app/AppShell.jsx` — sidebar (Lucide icons), routing, theme toggle
+- `/app/frontend/src/components/app/AppShell.jsx` — thin composition of shell sub-components
+- `/app/frontend/src/components/app/shell/` — Sidebar, DemoBanner, TopHeader
+- `/app/frontend/src/components/app/subject/` — SubjectHero, TopicsList, SubjectSidePanels
+- `/app/frontend/src/components/app/plan/` — PlanDayCard, PlanGeneratingState, useMockStudyPlan
 - `/app/frontend/src/components/decor/` — InfinityBackground, StudyDecor, EmptyStateScene
 
 ## Health
 - All services running via supervisor (hot-reload enabled)
+- Lint: 0 errors on app components
 - Broken: None
-- Mocked: DB, Auth, AI worksheet generation, Study Plans
+- Mocked: DB, Auth, worksheet generation, study plans

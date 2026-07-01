@@ -108,8 +108,8 @@ export default function Tutorial({ onDone }) {
           {/* footer */}
           <div className="px-6 py-5 border-t border-[color:var(--color-border)] flex items-center justify-between gap-4">
             <div className="flex items-center gap-1.5">
-              {STEPS.map((_, idx) => (
-                <button key={idx} onClick={() => setI(idx)} aria-label={`Go to step ${idx + 1}`}
+              {STEPS.map((s, idx) => (
+                <button key={s.title || idx} onClick={() => setI(idx)} aria-label={`Go to step ${idx + 1}`}
                   className={`w-2 h-2 rounded-full transition-colors ${idx === i ? 'bg-blue-600' : (idx < i ? 'bg-blue-300' : 'bg-slate-300')}`} />
               ))}
               <span className="ml-3 text-[12.5px] text-slate-500 tabular-nums">{i + 1} / {STEPS.length}</span>

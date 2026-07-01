@@ -141,8 +141,8 @@ export default function TutorialOverlay() {
             </div>
             <div className="px-5 py-3 border-t border-[color:var(--color-border)] flex items-center justify-between gap-3 bg-slate-50/60">
               <div className="flex items-center gap-1.5">
-                {STEPS.map((_, idx) => (
-                  <button key={idx} onClick={() => setI(idx)} aria-label={`Go to step ${idx + 1}`}
+                {STEPS.map((s, idx) => (
+                  <button key={s.title} onClick={() => setI(idx)} aria-label={`Go to step ${idx + 1}`}
                     className={`w-1.5 h-1.5 rounded-full transition-colors ${idx === i ? 'bg-blue-600' : (idx < i ? 'bg-blue-300' : 'bg-slate-300')}`} />
                 ))}
                 <span className="ml-2 text-[11.5px] text-slate-500 tabular-nums">{i + 1} / {STEPS.length}</span>
