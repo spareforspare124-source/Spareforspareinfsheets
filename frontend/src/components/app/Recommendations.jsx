@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Sparkles, ArrowRight } from 'lucide-react';
+import EmptyStateScene from '../decor/EmptyStateScene';
 
 export default function Recommendations({ go }) {
   const { state } = useApp();
@@ -19,10 +20,13 @@ export default function Recommendations({ go }) {
 
   if (recs.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-zinc-200 p-12 text-center">
-        <Sparkles className="w-6 h-6 text-zinc-400 mx-auto mb-3" />
-        <div className="text-[15px] font-medium text-zinc-700">No recommendations yet</div>
-        <div className="text-[13px] text-zinc-500 mt-1">Complete a worksheet so we can suggest your next best actions.</div>
+      <div className="relative rounded-2xl border border-dashed border-[color:var(--color-border)] bg-white overflow-hidden min-h-[360px]">
+        <EmptyStateScene variant="lab" className="absolute inset-0" />
+        <div className="relative p-12 text-center">
+          <Sparkles className="w-6 h-6 text-slate-400 mx-auto mb-3" />
+          <div className="text-[15px] font-medium text-slate-700">No recommendations yet</div>
+          <div className="text-[13px] text-slate-500 mt-1">Complete a worksheet so we can suggest your next best actions.</div>
+        </div>
       </div>
     );
   }

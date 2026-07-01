@@ -73,16 +73,24 @@ export default function Dashboard({ go }) {
   const dailyGoal = state.settings?.dailyGoal || 10;
   const progressPct = Math.min(100, Math.round((questionsToday / dailyGoal) * 100));
 
-  // Compute nearest upcoming exam from courses (fallback to global settings.examDate)
+  // Flatten all subjects from all courses with their per-subject exam dates
   const courseExams = useMemo(() => {
-    const list = (state.courses || []).filter((c) => c.examDate).map((c) => ({
-      name: c.name || c.subject,
-      subject: c.subject,
-      date: c.examDate,
-      days: Math.max(0, Math.ceil((new Date(c.examDate + 'T00:00:00').getTime() - Date.now()) / (1000 * 60 * 60 * 24))),
-      status: c.status,
-    })).sort((a, b) => a.days - b.days);
-    return list;
+    const flat = [];
+    (state.courses || []).forEach((c) => {
+      const subs = Array.isArray(c.subjects) ? c.subjects : [{ subject: c.subject, examDate: c.examDate }];
+      subs.forEach((s) => {
+        if (!s.examDate) return;
+        flat.push({
+          name: s.subject,
+          courseName: c.name,
+          subject: s.subject,
+          date: s.examDate,
+          days: Math.max(0, Math.ceil((new Date(s.examDate + 'T00:00:00').getTime() - Date.now()) / (1000 * 60 * 60 * 24))),
+        });
+      });
+    });
+    flat.sort((a, b) => a.days - b.days);
+    return flat;
   }, [state.courses]);
 
   const fallbackDate = state.settings?.examDate;
