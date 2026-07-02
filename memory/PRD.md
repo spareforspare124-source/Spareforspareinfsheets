@@ -6,63 +6,66 @@ Clone `https://infinitysheets.netlify.app/#dashboard-view` as a pixel-perfect, f
 - Personalized exam prep (Worksheets, Mistake tracking, Subject Overviews)
 - Dark Mode & Demo Mode
 - Multi-subject Course Onboarding wizard, interactive Tutorial, Progress analytics
-- Frontend-only w/ localStorage now; backend + AI explicitly *deferred* by user
+- **Admin content management**: upload syllabus PDFs, past papers, mark schemes, examiner reports; auto-extract + categorize by subject/topic; auto-populate the Question Bank
 
 ## Tech Stack
 - **Frontend**: React + TailwindCSS + Shadcn UI + Recharts + Lucide-React
-- **State**: React Context (`AppContext.jsx`) + localStorage persistence
-- **Backend**: FastAPI + Motor (MongoDB) — boilerplate only, not wired to frontend
-- **Worksheets**: 100% placeholder questions from `QUESTION_BANK` / `FALLBACK_QUESTIONS` (no AI, per user)
+- **State**: React Context (`AppContext.jsx`) + localStorage (study data) + httpOnly cookies (auth session)
+- **Backend**: FastAPI + Motor (MongoDB async) + PyJWT + bcrypt
+- **Worksheets (current)**: 100% placeholder questions from `QUESTION_BANK` / `FALLBACK_QUESTIONS`
+- **Worksheets (planned Phase 3)**: Populated from Claude-parsed past papers
 
 ## Design System
-- **Primary**: Royal Blue `#2563eb`
-- **Secondary**: Purple `#7c3aed`
-- **Tertiary**: Red `#dc2626` (kept as palette token but used sparingly)
-- **Success**: Emerald `#10b981`
-- **Dark Mode**: True off-black (`#0a0a0a` bg, `#171717` cards, `#262626` borders)
-- **No gradients, no glow shadows, no blur decorations** — clean flat design
-- **No emojis** — all iconography via Lucide-React; subject badges use letter symbols
-- Sharp corners (custom rounded overrides), Instrument Serif for italic accents
+- **Primary**: Royal Blue `#2563eb` · **Secondary**: Purple `#7c3aed` · **Tertiary**: Red `#dc2626` · **Success**: Emerald `#10b981`
+- **Dark Mode**: True off-black `#0a0a0a` bg
+- No gradients, no glow shadows, no blur decorations, no emojis (letter symbols + Lucide icons)
 
-## Completed (Feb 2026)
-- Full landing page (Hero, WhatIs, HowItWorks, Features, Research, ExamPathways, Pricing, Testimonials, Signup, FinalCTA, Footer)
-- Full dashboard app (12 pages)
-- Multi-subject Course Wizard now has **4 steps**: Exam → Subjects → Dates → **Schedule** (worksheet frequency + weekly question goal)
-- 5-step interactive tutorial overlay with DOM highlighting
-- Dark Mode + Demo Mode + Reset Demo flow
-- Line-chart Progress View tracking % deltas over time
-- Hand-drawn laboratory/cobweb empty state scenes
-- Color palette swap (Royal Blue / Purple / Red)
-- Removed all gradients, glows, blur decorations, and emojis
-- Fixed infinity-bg SVG stacking bug (restored `.inf-1/-2/-3/-4` corner positioning + `pointer-events: none`)
-- **P2 refactor**: Split AppShell → Sidebar + DemoBanner + TopHeader; SubjectOverview → SubjectHero + TopicsList + SubjectSidePanels; StudyPlanModal → PlanGeneratingState + PlanDayCard + useMockStudyPlan hook
-- **P2 cleanup**: Stable keys in list maps, removed unused eslint-disable directives
+## Phase 1 COMPLETE — JWT Authentication (this session)
+- Backend `/app/backend/auth/` module: `security.py` (bcrypt + PyJWT), `models.py`, `deps.py` (get_current_user + require_admin), `routes.py` (register / login / logout / me / refresh), `seed.py` (idempotent admin seed + indexes + writes test_credentials.md)
+- httpOnly cookies (`SameSite=None`, `Secure`) for cross-domain access on the preview URL
+- Brute-force lockout: 5 attempts per `ip:email` → 15 minute lockout
+- MongoDB indexes: `users.email` unique, `login_attempts.identifier`, `password_reset_tokens.expires_at` TTL
+- CORS: explicit frontend URL + regex for `*.preview.emergentagent.com` + `allow_credentials=True`
+- Admin seeded on every startup: `admin@infinitysheets.com` / `admin123` / role `admin`
+- Frontend: `apiRegister` / `apiLogin` / `apiLogout` in AppContext; `/api/auth/me` on mount; SignupSection wired to real API; `role === 'admin'` conditional Admin nav + `AdminPlaceholder` page
 
-## In Progress
-- None
+## Phase 2 — Deferred: Admin file management
+- Emergent object storage integration for PDF uploads (up to 20 MB)
+- Admin UI: upload with subject/topic/type metadata (past paper / mark scheme / syllabus / examiner report)
+- File list + delete endpoints
+- pdfplumber text extraction
 
-## Deferred by User
-- Backend integration (FastAPI models + endpoints for Users/Courses/Worksheets/Progress/Mistakes)
-- AI worksheet generation (Emergent LLM Key) — explicitly deferred, worksheets stay placeholder-only
-- Authentication (JWT or Google OAuth) — explicitly deferred
+## Phase 3 — Deferred: AI question parsing
+- Claude Sonnet 4.5 pipeline: PDF text → structured `[{question, options, correct, topic, subject}]`
+- Populate `question_bank` MongoDB collection
+- Wire Worksheets page to query DB (falling back to static mock for topics with no parsed content)
 
-## Backlog
-- Deeper red integration if user changes their mind (currently just palette-level accents)
-- Progress view: filter by date range
-- Worksheet history: search + pagination
+## Deferred by user
+- Demo mode still fully client-side / localStorage — untouched
+
+## Completed prior work (context)
+- Full landing page, 12 dashboard pages
+- 4-step Course Wizard (Exam → Subjects → Dates → Schedule)
+- 5-step interactive tutorial overlay
+- Dark Mode + Demo Mode + Reset Demo
+- Line-chart Progress View
+- Hand-drawn empty state scenes
+- Color palette swap, no gradients/glows/emojis
+- Component splits: AppShell → shell/, SubjectOverview → subject/, StudyPlanModal → plan/
+- Stable keys in list maps; lint clean
 
 ## Key Files
-- `/app/frontend/src/index.css` — CSS variables, dark mode overrides, global gradient/glow suppression
-- `/app/frontend/src/data/mock.js` — SUBJECT_INFO (letter symbols), SUBJECTS, QUESTION_BANK, FALLBACK_QUESTIONS
-- `/app/frontend/src/context/AppContext.jsx` — global state + localStorage
-- `/app/frontend/src/components/app/AppShell.jsx` — thin composition of shell sub-components
-- `/app/frontend/src/components/app/shell/` — Sidebar, DemoBanner, TopHeader
-- `/app/frontend/src/components/app/subject/` — SubjectHero, TopicsList, SubjectSidePanels
-- `/app/frontend/src/components/app/plan/` — PlanDayCard, PlanGeneratingState, useMockStudyPlan
-- `/app/frontend/src/components/decor/` — InfinityBackground, StudyDecor, EmptyStateScene
+- `/app/backend/server.py` — startup: create indexes, seed admin, write test_credentials.md
+- `/app/backend/auth/` — all auth logic
+- `/app/backend/.env` — `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `FRONTEND_URL`
+- `/app/frontend/src/context/AppContext.jsx` — apiRegister/apiLogin/apiLogout + /me hydration
+- `/app/frontend/src/components/landing/SignupSection.jsx` — real signup/login forms
+- `/app/frontend/src/components/app/AdminPlaceholder.jsx` — admin landing page
+- `/app/frontend/src/components/app/AppShell.jsx` — conditional Admin nav
+- `/app/memory/test_credentials.md` — admin credentials + endpoint list
 
 ## Health
-- All services running via supervisor (hot-reload enabled)
-- Lint: 0 errors on app components
+- Services running via supervisor
+- Lint: 0 errors, 1 harmless unused-eslint-disable warning
 - Broken: None
-- Mocked: DB, Auth, worksheet generation, study plans
+- Verified: admin login via curl + browser, /me via cookie, admin nav gate, brute-force lockout

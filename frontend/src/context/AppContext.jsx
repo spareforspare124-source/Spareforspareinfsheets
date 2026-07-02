@@ -2,10 +2,32 @@ import React, { createContext, useContext, useEffect, useState, useCallback, use
 
 // NOTE on storage: this app does NOT store credentials, tokens, or PII secrets.
 // Only non-sensitive study data (worksheet history, mistakes, theme, courses, settings).
-// Passwords are entered for signup/login UX but never persisted. If you ever add
-// auth tokens, do not place them in localStorage — use httpOnly cookies instead.
+// Auth tokens live in httpOnly cookies set by the backend, never localStorage.
 const STORAGE_KEY = 'infinitysheets_state_v1';
 const isProd = process.env.NODE_ENV === 'production';
+const API_BASE = process.env.REACT_APP_BACKEND_URL;
+
+async function apiCall(path, opts = {}) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+    ...opts,
+  });
+  const text = await res.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = { raw: text }; }
+  if (!res.ok) {
+    const detail = data?.detail;
+    let message = 'Request failed';
+    if (typeof detail === 'string') message = detail;
+    else if (Array.isArray(detail)) message = detail.map((e) => e?.msg || JSON.stringify(e)).join(' ');
+    else if (detail?.msg) message = detail.msg;
+    const err = new Error(message);
+    err.status = res.status;
+    throw err;
+  }
+  return data;
+}
 
 function logError(scope, err) {
   // Single place to plug into a real error tracker (Sentry, etc.) later.
@@ -120,6 +142,56 @@ export function AppProvider({ children }) {
     setState((s) => ({ ...s, user: null }));
   }, []);
 
+  const apiRegister = useCallback(async ({ email, password, name, examTrack, subjects }) => {
+    const me = await apiCall('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, name }),
+    });
+    setState((s) => ({
+      ...s,
+      user: {
+        id: me.id,
+        email: me.email,
+        name: me.name,
+        role: me.role || 'user',
+        examTrack: examTrack || s.user?.examTrack || 'SSLC',
+        subjects: subjects || s.user?.subjects || [],
+        isDemo: false,
+      },
+    }));
+    return me;
+  }, []);
+
+  const apiLogin = useCallback(async ({ email, password }) => {
+    const me = await apiCall('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+    setState((s) => ({
+      ...s,
+      user: {
+        ...(s.user && !s.user.isDemo && s.user.email === me.email ? s.user : {}),
+        id: me.id,
+        email: me.email,
+        name: me.name,
+        role: me.role || 'user',
+        examTrack: (s.user && !s.user.isDemo ? s.user.examTrack : null) || 'SSLC',
+        subjects: (s.user && !s.user.isDemo ? s.user.subjects : null) || [],
+        isDemo: false,
+      },
+    }));
+    return me;
+  }, []);
+
+  const apiLogout = useCallback(async () => {
+    try {
+      await apiCall('/api/auth/logout', { method: 'POST' });
+    } catch (e) {
+      logError('logout', e);
+    }
+    setState((s) => ({ ...s, user: null }));
+  }, []);
+
   const updateProfile = useCallback((patch) => {
     setState((s) => ({ ...s, user: { ...s.user, ...patch } }));
   }, []);
@@ -206,6 +278,9 @@ export function AppProvider({ children }) {
     signup,
     login,
     logout,
+    apiRegister,
+    apiLogin,
+    apiLogout,
     updateProfile,
     updateSettings,
     resetProgress,
@@ -227,6 +302,9 @@ export function AppProvider({ children }) {
     signup,
     login,
     logout,
+    apiRegister,
+    apiLogin,
+    apiLogout,
     updateProfile,
     updateSettings,
     resetProgress,

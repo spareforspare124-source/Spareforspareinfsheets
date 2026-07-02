@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, GraduationCap, Brain, FileText, Library, History, TrendingUp, Dumbbell, Sparkles, AlertTriangle, User, Settings } from 'lucide-react';
+import { LayoutDashboard, GraduationCap, Brain, FileText, Library, History, TrendingUp, Dumbbell, Sparkles, AlertTriangle, User, Settings, Shield } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import Dashboard from './Dashboard';
 import StartStudying from './StartStudying';
@@ -15,12 +15,13 @@ import MyCourses from './MyCourses';
 import TutorialOverlay from './TutorialOverlay';
 import CourseWizard from './CourseWizard';
 import QuestionBank from './QuestionBank';
+import AdminPlaceholder from './AdminPlaceholder';
 import Sidebar from './shell/Sidebar';
 import DemoBanner from './shell/DemoBanner';
 import TopHeader from './shell/TopHeader';
 import { toast } from 'sonner';
 
-const NAV = [
+const BASE_NAV = [
   { key: 'dashboard', label: 'Dashboard', Icon: LayoutDashboard },
   { key: 'courses', label: 'My Courses', Icon: GraduationCap },
   { key: 'study', label: 'Start Studying', Icon: Brain },
@@ -34,6 +35,7 @@ const NAV = [
   { key: 'profile', label: 'Profile', Icon: User },
   { key: 'settings', label: 'Settings', Icon: Settings },
 ];
+const ADMIN_ITEM = { key: 'admin', label: 'Admin', Icon: Shield };
 
 function parseHash(hash) {
   const raw = (hash || '').replace(/^#/, '');
@@ -46,7 +48,7 @@ function parseHash(hash) {
   return { key: key || 'dashboard', params };
 }
 
-function renderRoute(activeKey, params, go) {
+function renderRoute(activeKey, params, go, isAdmin) {
   switch (activeKey) {
     case 'dashboard': return <Dashboard go={go} />;
     case 'courses': return <MyCourses />;
@@ -60,17 +62,20 @@ function renderRoute(activeKey, params, go) {
     case 'mistakes': return <Mistakes />;
     case 'profile': return <Profile />;
     case 'settings': return <SettingsView />;
+    case 'admin': return isAdmin ? <AdminPlaceholder /> : <Dashboard go={go} />;
     default: return <Dashboard go={go} />;
   }
 }
 
 export default function AppShell({ hash }) {
-  const { state, logout, toggleTheme, restartTutorial, restartOnboarding, resetProgress } = useApp();
+  const { state, logout, apiLogout, toggleTheme, restartTutorial, restartOnboarding, resetProgress } = useApp();
   const { key: active, params } = parseHash(hash);
+  const isDemo = !!state.user?.isDemo;
+  const isAdmin = state.user?.role === 'admin';
+  const NAV = isAdmin ? [...BASE_NAV, ADMIN_ITEM] : BASE_NAV;
   const current = NAV.find((n) => n.key === active) || NAV[0];
 
   const go = (k) => { window.location.hash = `#${k}`; };
-  const isDemo = !!state.user?.isDemo;
   const isDark = state.theme === 'dark';
   const showOnboarding = !state.onboardingDone;
   const showTutorial = state.onboardingDone && !state.tutorialDone;
@@ -83,7 +88,14 @@ export default function AppShell({ hash }) {
     toast.success('Demo reset — starting setup from the top');
   };
 
-  const exitAccount = () => { logout(); window.location.hash = ''; };
+  const exitAccount = async () => {
+    if (isDemo) {
+      logout();
+    } else {
+      await apiLogout();
+    }
+    window.location.hash = '';
+  };
 
   return (
     <div className="min-h-screen section-bg grid grid-cols-[230px_1fr]">
@@ -109,7 +121,7 @@ export default function AppShell({ hash }) {
           onNewWorksheet={() => go('worksheets')}
         />
         <div className="px-8 py-7 max-w-[1280px]">
-          {renderRoute(current.key, params, go)}
+          {renderRoute(current.key, params, go, isAdmin)}
         </div>
       </main>
 
