@@ -40,7 +40,7 @@ export default function SubjectHero({ subject, info, examTrack, topicCount, subj
               <div className="text-[28px] font-semibold tracking-tight leading-tight">{subject}</div>
             </div>
           </div>
-          <p className="text-[15.5px] text-white/85 max-w-[640px] leading-relaxed">{info.description}</p>
+          <p className="text-[15.5px] text-white/85 max-w-[640px] leading-relaxed sr-only">{info.description}</p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <button
               onClick={onCreateWorksheet}

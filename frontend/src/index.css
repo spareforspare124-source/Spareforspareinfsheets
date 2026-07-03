@@ -5,8 +5,8 @@
 @tailwind utilities;
 
 :root {
-    --color-primary: #2563eb;        /* royal blue */
-    --color-primary-700: #1d4ed8;
+    --color-primary: #1e40af;        /* dark royal blue */
+    --color-primary-700: #1e3a8a;
     --color-secondary: #7c3aed;      /* purple */
     --color-secondary-700: #6d28d9;
     --color-tertiary: #dc2626;       /* red */
@@ -174,7 +174,7 @@ html, body {
         --card-foreground: 240 10% 4%;
         --popover: 0 0% 100%;
         --popover-foreground: 240 10% 4%;
-        --primary: 217 91% 53%;
+        --primary: 224 76% 40%;
         --primary-foreground: 0 0% 98%;
         --secondary: 240 5% 96%;
         --secondary-foreground: 240 6% 10%;

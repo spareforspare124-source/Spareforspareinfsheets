@@ -174,7 +174,6 @@ export default function CourseWizard({ mode = 'onboarding', onClose }) {
                             <span className="text-[16px] leading-none">{info.emoji}</span>
                             <span className={`text-[13.5px] font-semibold ${sel ? 'text-blue-700' : 'text-slate-900'}`}>{s}</span>
                           </div>
-                          <div className="text-[11.5px] text-slate-500 mt-1 leading-snug truncate">{info.tagline}</div>
                         </div>
                         {sel && <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />}
                       </div>
@@ -221,7 +220,6 @@ export default function CourseWizard({ mode = 'onboarding', onClose }) {
                         <span className="text-[18px] leading-none">{info.emoji}</span>
                         <div>
                           <div className="text-[14px] font-semibold text-slate-900">{s}</div>
-                          <div className="text-[11.5px] text-slate-500">{info.tagline || ''}</div>
                         </div>
                       </div>
                       <input type="date" min={new Date().toISOString().slice(0, 10)} className="input-base" value={v} onChange={(e) => setDates((d) => ({ ...d, [s]: e.target.value }))} />

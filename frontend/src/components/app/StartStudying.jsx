@@ -44,7 +44,6 @@ export default function StartStudying({ go, subjectParam }) {
                   <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
                 </div>
                 <div className="relative mt-4 text-[16.5px] font-semibold text-slate-900">{s}</div>
-                <div className="relative text-[13px] text-slate-500 mt-1 leading-snug">{info.tagline}</div>
               </button>
             );
           })}

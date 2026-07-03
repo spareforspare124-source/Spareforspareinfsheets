@@ -182,7 +182,6 @@ export default function OnboardingFlow() {
                             <span className="text-[16px] leading-none">{info.emoji}</span>
                             <span className={`text-[13.5px] font-semibold ${sel ? 'text-blue-700' : 'text-slate-900'}`}>{s}</span>
                           </div>
-                          <div className="text-[11.5px] text-slate-500 mt-1 leading-snug truncate">{info.tagline}</div>
                         </div>
                         {sel && <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />}
                       </div>

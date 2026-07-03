@@ -13,6 +13,19 @@ module.exports = {
         sm: 'calc(var(--radius) - 4px)'
       },
       colors: {
+        blue: {
+          50:  '#dbeafe',
+          100: '#bfdbfe',
+          200: '#93c5fd',
+          300: '#60a5fa',
+          400: '#2563eb',
+          500: '#1d4ed8',
+          600: '#1e40af',
+          700: '#1e3a8a',
+          800: '#172554',
+          900: '#0f172a',
+          950: '#0a0e1f',
+        },
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
