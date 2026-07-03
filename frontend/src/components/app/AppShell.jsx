@@ -16,6 +16,7 @@ import TutorialOverlay from './TutorialOverlay';
 import CourseWizard from './CourseWizard';
 import QuestionBank from './QuestionBank';
 import AdminPlaceholder from './AdminPlaceholder';
+import CourseOverview from './CourseOverview';
 import Sidebar from './shell/Sidebar';
 import DemoBanner from './shell/DemoBanner';
 import TopHeader from './shell/TopHeader';
@@ -37,6 +38,7 @@ const ADMIN_ITEM = { key: 'admin', label: 'Admin', Icon: Shield };
 const HIDDEN_ROUTES = [
   { key: 'worksheets', label: 'Create a Worksheet', Icon: FileText },
   { key: 'mistakes', label: 'Mistake History', Icon: AlertTriangle },
+  { key: 'course-overview', label: 'Course Overview', Icon: GraduationCap },
 ];
 
 function parseHash(hash) {
@@ -65,6 +67,7 @@ function renderRoute(activeKey, params, go, isAdmin) {
     case 'profile': return <Profile />;
     case 'settings': return <SettingsView />;
     case 'admin': return isAdmin ? <AdminPlaceholder /> : <Dashboard go={go} />;
+    case 'course-overview': return <CourseOverview courseId={params.id} go={go} />;
     default: return <Dashboard go={go} />;
   }
 }

@@ -6,12 +6,12 @@ import { ChevronLeft, ChevronRight, X, Sparkles, ArrowRight } from 'lucide-react
 // describing what the user is seeing. Optionally highlights a sidebar nav item.
 const STEPS = [
   {
-    route: 'dashboard',
-    target: 'dashboard',
+    route: 'course-overview',
+    target: 'courses',
     eyebrow: 'Welcome',
-    title: 'Your dashboard',
-    body: 'This is mission control. See days until your exam, your study streak, total questions answered, and the next recommended action.',
-    bullets: ['Days until exam', 'Streak & questions', 'Recommended action'],
+    title: 'Your course overview',
+    body: 'Here are all the topics we\u2019ll help you master, along with a quick summary of what each one covers. Come back anytime from My Courses.',
+    bullets: ['Every topic, per subject', 'Brief summary per topic', 'Jump into any subject'],
   },
   {
     route: 'courses',

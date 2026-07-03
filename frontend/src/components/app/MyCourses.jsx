@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Plus, GraduationCap, Trash2, CalendarClock } from 'lucide-react';
+import { Plus, GraduationCap, Trash2, CalendarClock, ArrowRight } from 'lucide-react';
 import { EXAM_TRACKS, SUBJECT_INFO } from '../../data/mock';
 import { toast } from 'sonner';
 import CourseWizard from './CourseWizard';
@@ -63,12 +63,18 @@ function CourseCard({ course, onRemove, onUpdate }) {
       <div className="mt-3 flex flex-col gap-1.5">
         {c.subjects.map((s) => <SubjectRow key={s.subject} s={s} />)}
       </div>
-      <div className="mt-4 flex items-center justify-between">
+      <div className="mt-4 flex items-center justify-between gap-2">
         <select value={c.status || 'Active'} onChange={(e) => onUpdate(c.id, { status: e.target.value })}
           className={`text-[12px] font-medium rounded-md px-2 py-1 border transition-colors ${statusClass(c.status || 'Active')}`}>
           {STATUS.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
-        <div className="text-[11.5px] text-slate-500">Added {new Date(c.addedAt || Date.now()).toLocaleDateString()}</div>
+        <button
+          onClick={() => { window.location.hash = `#course-overview?id=${encodeURIComponent(c.id)}`; }}
+          className="inline-flex items-center gap-1 text-[12px] font-semibold text-blue-700 hover:text-blue-900 transition-colors"
+          data-testid="view-course-overview"
+        >
+          View overview <ArrowRight className="w-3.5 h-3.5" />
+        </button>
       </div>
     </div>
   );

@@ -61,13 +61,16 @@ export default function CourseWizard({ mode = 'onboarding', onClose }) {
     const exam = EXAM_TRACKS.find((e) => e.id === examTrack);
     const subjects = picked.map((s) => ({ subject: s, examDate: dates[s], target, level }));
     const name = (courseName || '').trim() || `${exam?.name || examTrack} ${picked.length > 1 ? 'Term' : picked[0]}`;
-    addCourse({ name, exam: examTrack, subjects, status: 'Active', target, level });
+    const courseId = `c_${Date.now()}`;
+    addCourse({ id: courseId, name, exam: examTrack, subjects, status: 'Active', target, level });
     const earliest = subjects.map((x) => x.examDate).sort()[0];
     if (isOnboarding) {
       completeOnboarding({ examTrack, examDate: earliest, subjects: picked, frequency, weeklyGoal });
-      toast.success(`Setup complete — let's build your first worksheet`);
+      toast.success(`Setup complete — here's your course overview`);
+      // The tutorial's first step will navigate to #course-overview automatically.
     } else {
       toast.success(`${name} added`);
+      window.location.hash = `#course-overview?id=${encodeURIComponent(courseId)}`;
     }
     if (onClose) onClose();
   };

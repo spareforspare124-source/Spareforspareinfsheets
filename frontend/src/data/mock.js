@@ -84,6 +84,78 @@ export const TOPICS = {
   Writing: ['Grammar', 'Rhetoric'],
 };
 
+// Brief summary of what each topic covers — used on the Course Overview page.
+export const TOPIC_SUMMARY = {
+  // Mathematics
+  Algebra: 'Equations, inequalities, polynomials, and manipulation of algebraic expressions.',
+  Trigonometry: 'Ratios, identities, and equations involving sine, cosine, tangent and their inverses.',
+  Geometry: 'Shapes, angles, congruence, similarity, coordinate geometry, and proofs.',
+  Calculus: 'Limits, derivatives, integrals and how they model change and area.',
+  Probability: 'Chance, sample spaces, combinations, and conditional probability.',
+  Statistics: 'Data description, distributions, sampling, and interpretation of summaries.',
+  Functions: 'Domain, range, transformations, and composition across function families.',
+  Sequences: 'Arithmetic, geometric, recursive and series with convergence ideas.',
+  Modelling: 'Turning real-world scenarios into mathematical relationships to predict outcomes.',
+  'Complex Numbers': 'Operations on a + bi form, Argand diagrams, polar form and roots of unity.',
+  Matrices: 'Matrix arithmetic, determinants, inverses and solving linear systems.',
+  'Differential Equations': 'Modelling change with first and second order equations and solution techniques.',
+  'Heart of Algebra': 'Linear equations, systems, and inequalities — SAT foundations.',
+  'Problem Solving': 'Ratios, percentages, and data analysis in real contexts.',
+  'Advanced Math': 'Quadratics, exponentials, and manipulating higher-order expressions.',
+
+  // Physics
+  Mechanics: 'Motion, forces, energy, and momentum — the core of classical physics.',
+  Electrostatics: 'Charges, electric fields, potential, and Coulomb interactions.',
+  Optics: 'Reflection, refraction, lenses, mirrors and the wave nature of light.',
+  Thermodynamics: 'Heat, work, laws of thermodynamics, and gas behaviour.',
+  'Modern Physics': 'Photoelectric effect, atomic models, and an intro to quantum ideas.',
+  Waves: 'Transverse and longitudinal waves, interference, resonance and sound.',
+
+  // Chemistry
+  Organic: 'Carbon compounds, functional groups, and common reaction mechanisms.',
+  Inorganic: 'Periodic trends, bonding, and reactions of non-organic elements and compounds.',
+  Physical: 'Rates, energetics, equilibria and quantitative chemistry principles.',
+  'Coordination Compounds': 'Ligands, complex ions, geometry, and bonding in transition metal complexes.',
+  Equilibrium: 'Reversible reactions, Le Chatelier, and equilibrium constants.',
+
+  // Biology
+  'Cell Biology': 'Cell structure, organelles, transport, and the basics of cellular processes.',
+  Genetics: 'Inheritance, DNA, alleles, and Mendelian and molecular genetics.',
+  Ecology: 'Ecosystems, food webs, energy flow, and human impact on the environment.',
+  'Human Physiology': 'Body systems — circulation, respiration, digestion, and homeostasis.',
+  'Plant Physiology': 'Photosynthesis, transport, and plant growth and reproduction.',
+
+  // Social Science
+  History: 'Key events, movements, and thinkers that shaped the modern world.',
+  Geography: 'Physical features, climate, resources, and human geography.',
+  Civics: 'Government, rights, duties, and how democratic institutions work.',
+  Economics: 'How individuals, firms, and governments make choices with scarce resources.',
+
+  // English
+  'Reading Comprehension': 'Main idea, inference, tone, and close reading of passages.',
+  Grammar: 'Sentence structure, tenses, agreement and standard usage.',
+  Vocabulary: 'Word meanings, roots, and vocabulary in context.',
+  Writing: 'Structuring arguments, essays, and clear, persuasive expression.',
+
+  // Computer Applications
+  'Java Basics': 'Syntax, variables, control flow, and simple program design in Java.',
+  OOP: 'Classes, objects, inheritance, and polymorphism.',
+  Arrays: 'Declaring, iterating, and manipulating one- and two-dimensional arrays.',
+  Strings: 'String methods, character handling, and common text-processing patterns.',
+
+  // Economics (subject-level topics)
+  Microeconomics: 'Demand, supply, elasticity, and how markets allocate resources.',
+  Macroeconomics: 'GDP, inflation, unemployment, and fiscal & monetary policy.',
+  'International Trade': 'Comparative advantage, exchange rates, and trade policy.',
+
+  // SAT Reading & Writing
+  Passages: 'Reading long texts efficiently and answering evidence-based questions.',
+  'Vocabulary in Context': 'Choosing the meaning of a word based on how it is used in the passage.',
+  Rhetoric: 'Recognising author choices — tone, style, and argument structure.',
+};
+
+
+
 // Question bank for worksheet generation
 export const QUESTION_BANK = {
   Mechanics: [
