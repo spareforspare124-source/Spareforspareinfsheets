@@ -57,7 +57,7 @@ export default function AdminPlaceholder() {
     return null;
   };
 
-  const submit = () => {
+  const submit = async () => {
     const err = validate();
     if (err) { toast.error(err); return; }
     const base = {
@@ -72,8 +72,6 @@ export default function AdminPlaceholder() {
       source: 'past-paper',
     };
     if (form.answerType === 'Multiple choice') {
-      const opts = form.options.map((o) => o.trim()).filter((_, i) => form.options[i] !== undefined);
-      // Preserve correct index by dropping empties AFTER trimming, but keep positions.
       const clean = form.options.map((o) => o.trim());
       base.options = clean;
       base.a = form.a;
@@ -84,9 +82,13 @@ export default function AdminPlaceholder() {
       base.examAnswer = form.examAnswer.trim();
       base.examKeywords = form.examKeywords.split(',').map((s) => s.trim()).filter(Boolean);
     }
-    addPastPaper(base);
-    toast.success('Past paper question added');
-    setForm(emptyForm(track));
+    try {
+      await addPastPaper(base);
+      toast.success('Past paper question saved');
+      setForm(emptyForm(track));
+    } catch (e) {
+      toast.error(e?.message || 'Could not save question');
+    }
   };
 
   return (
@@ -248,7 +250,14 @@ export default function AdminPlaceholder() {
                         </div>
                       )}
                     </div>
-                    <button onClick={() => { removePastPaper(p.id); toast.success('Question removed'); }} className="w-8 h-8 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center shrink-0" aria-label="Remove">
+                    <button onClick={async () => {
+                      try {
+                        await removePastPaper(p.id);
+                        toast.success('Question removed');
+                      } catch (e) {
+                        toast.error(e?.message || 'Could not remove question');
+                      }
+                    }} className="w-8 h-8 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center shrink-0" aria-label="Remove">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>

@@ -102,39 +102,141 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Code review fixes: address security/error-handling/perf issues in /app/frontend/src/context/AppContext.jsx (empty catches, missing error logging, inline context value object causing rerenders). Verify the frontend still works end-to-end after the refactor."
+user_problem_statement: "Test the newly-added past-paper API endpoints on the FastAPI backend. All routes are under ${REACT_APP_BACKEND_URL}/api/past-papers (no auth required). Verify: (1) GET /api/past-papers returns array, (2-4) POST with valid MCQ/Typed/Exam payloads returns 201 with id/addedAt/source, (5-6) GET filters by subject/answerType work, (7-8) Invalid payloads return 422, (9) DELETE existing returns 204, (10) DELETE non-existent returns 404. Also confirm pre-existing GET /api/ still returns Hello World."
 
-frontend:
-  - task: "AppContext.jsx critical-issue refactor (catches, useMemo context value, error logging)"
+backend:
+  - task: "Past-paper API - GET /api/past-papers (list all)"
     implemented: true
     working: true
-    file: "frontend/src/context/AppContext.jsx"
+    file: "backend/past_papers/routes.py"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
         -working: "NA"
         -agent: "main"
-        -comment: "Replaced empty catch blocks with logError helper (console.warn in dev, hook for Sentry later). Wrapped Provider value in useMemo with full dependency array to stop needless rerenders of every consumer. Added clarifying comment that localStorage only holds non-sensitive study data. Cleaned redundant ternary (goalDate === today ? today : today)."
+        -comment: "Implemented GET /api/past-papers endpoint with optional filters (subject, topic, answerType). Returns list of past-paper questions sorted by addedAt descending, limit 500 by default."
         -working: true
         -agent: "testing"
-        -comment: "Comprehensive end-to-end smoke test completed. PASSED: (1) Signup + Onboarding + Tutorial flow - signup form works, 3-step onboarding (CBSE exam track, 30-day exam date, select all subjects), tutorial overlay appears, dashboard renders with correct stat cards. (2) Demo mode - Try Demo button works, lands on dashboard with demo banner (Reset demo + Exit buttons), sidebar shows reset demo, tutorial appears, reset demo button works. (3) Dark mode persistence - toggle works, persists across reload. (4) My Courses persistence - add course modal works, course card appears, persists after reload (localStorage working). (5) Settings Replay Tutorial - button works, lands on dashboard, tutorial overlay appears. NO console errors detected. State hydration and persistence working correctly. All context consumers functioning properly. The AppContext refactor did NOT introduce any regressions. Minor: Exam countdown shows '0 days' instead of '30 days' - possible calculation issue but not critical."
+        -comment: "✅ PASS: GET /api/past-papers returns JSON array (200). Initial count: 2 items. Endpoint working correctly."
+
+  - task: "Past-paper API - POST /api/past-papers (create MCQ)"
+    implemented: true
+    working: true
+    file: "backend/past_papers/routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Implemented POST /api/past-papers with validation for Multiple choice questions. Validates options array and 'a' index. Returns 201 with created item including id, addedAt, source='past-paper'."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASS: POST MCQ past-paper returns 201 with correct structure. Created item includes id (pp_521ecb95e492), addedAt (ISO timestamp), source='past-paper'. All required fields present."
+
+  - task: "Past-paper API - POST /api/past-papers (create Typed response)"
+    implemented: true
+    working: true
+    file: "backend/past_papers/routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Implemented POST /api/past-papers with validation for Typed response questions. Validates typedAnswer is present. Returns 201 with created item."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASS: POST Typed response past-paper returns 201 with correct structure. Created item includes id, addedAt, source='past-paper', answerType='Typed response'."
+
+  - task: "Past-paper API - POST /api/past-papers (create Exam style)"
+    implemented: true
+    working: true
+    file: "backend/past_papers/routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Implemented POST /api/past-papers with validation for Exam style questions. Validates examAnswer is present. Returns 201 with created item."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASS: POST Exam style past-paper returns 201 with correct structure. Created item includes id, addedAt, source='past-paper', answerType='Exam style'."
+
+  - task: "Past-paper API - GET filters (subject, answerType)"
+    implemented: true
+    working: true
+    file: "backend/past_papers/routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Implemented query parameter filters for subject, topic, and answerType on GET /api/past-papers endpoint."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASS: Both filters working correctly. GET /api/past-papers?subject=Physics returned 2 Physics questions. GET /api/past-papers?answerType=Typed response returned 1 Typed response question. Filtering logic verified."
+
+  - task: "Past-paper API - Validation (422 errors)"
+    implemented: true
+    working: true
+    file: "backend/past_papers/routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Implemented comprehensive validation in _validate() function. Checks answerType in allowed set, difficulty in allowed set, required fields (subject, topic, q), MCQ requires valid 'a' index, Typed requires typedAnswer, Exam requires examAnswer. Returns 422 for validation failures."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASS: Validation working correctly. (1) Invalid MCQ missing 'a' field correctly returns 422 with detail: '`a` must be a valid index into `options`'. (2) Invalid answerType='Foo' correctly returns 422 with detail: 'answerType must be one of [Exam style, Multiple choice, Typed response]'."
+
+  - task: "Past-paper API - DELETE /api/past-papers/{id}"
+    implemented: true
+    working: true
+    file: "backend/past_papers/routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Implemented DELETE /api/past-papers/{pp_id} endpoint. Returns 204 on success, 404 if item not found."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASS: DELETE endpoint working correctly. (1) DELETE existing item (pp_521ecb95e492) returns 204 with empty body. (2) DELETE non-existent item (does-not-exist) returns 404. Both success and error cases verified."
+
+  - task: "Pre-existing API - GET /api/ (Hello World)"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASS: Pre-existing root endpoint still working. GET /api/ returns 200 with {'message': 'Hello World'}. No regression from past-paper API addition."
 
 metadata:
   created_by: "main_agent"
-  version: "1.2"
-  test_sequence: 2
-  run_ui: true
+  version: "1.3"
+  test_sequence: 3
+  run_ui: false
 
 test_plan:
   current_focus:
-    - "End-to-end smoke after AppContext refactor"
+    - "Past-paper API endpoints testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
     -agent: "main"
-    -message: "Frontend-only changes in AppContext.jsx. Please smoke-test the major flows on https://study-streak-update.preview.emergentagent.com/ to confirm the refactor did not break state hydration/persistence or context consumers. Critical flows: (1) Sign up from the landing-page Sign Up form (Name/Email/Password, exam track defaults SSLC) -> 3-step Onboarding (exam track, exam date, subjects) -> Tutorial overlay -> Dashboard. (2) Click 'Try Demo' on the landing navbar -> should skip onboarding and land on dashboard with Demo banner + 'Reset demo' button. (3) Toggle dark mode from the sidebar 'Dark mode' button and confirm theme persists across a page reload. (4) Create a worksheet from Worksheets page, answer questions, submit; verify it appears in Worksheet History and the Mistake History page. (5) Open Progress page after 2-3 worksheets across different subjects and confirm the per-subject grouped bar chart + average line render and that toggling a subject chip recomputes average and bars. (6) Add a course in My Courses and confirm it persists across reload. (7) Replay tutorial from Settings -> Replay tutorial. No backend changes were made."
+    -message: "Implemented past-paper API endpoints in backend/past_papers/routes.py. All CRUD operations complete with validation. Routes: GET /api/past-papers (list with filters), POST /api/past-papers (create with validation), DELETE /api/past-papers/{id}. No auth required. Please test all endpoints as specified in the review request."
     -agent: "testing"
-    -message: "End-to-end smoke test completed successfully. The AppContext.jsx refactor (empty catch blocks → logError, useMemo context value, error logging) did NOT break any functionality. All critical flows tested and working: signup/onboarding/tutorial, demo mode, dark mode persistence, courses persistence, replay tutorial. localStorage state hydration and persistence verified working. No console errors. All context consumers functioning correctly. The refactor is safe and working as intended. Minor observation: exam countdown calculation shows 0 days instead of expected 30 days, but this is a minor display issue and not related to the AppContext refactor."
+    -message: "✅ ALL TESTS PASSED (11/11). Past-paper API endpoints fully functional. Comprehensive test suite created in /app/backend_test.py covering: (1) GET list returns array ✅, (2-4) POST MCQ/Typed/Exam all return 201 with correct structure ✅, (5-6) Filters by subject/answerType working ✅, (7-8) Validation returns 422 for invalid payloads ✅, (9-10) DELETE returns 204/404 correctly ✅, (11) Pre-existing GET /api/ still works ✅. No issues found. All endpoints working as specified. Backend is production-ready for past-paper functionality."

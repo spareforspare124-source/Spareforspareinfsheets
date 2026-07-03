@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field, ConfigDict
 
 from auth.routes import router as auth_router
 from auth.seed import create_indexes, seed_admin, write_test_credentials
+from past_papers.routes import router as past_papers_router
 
 
 # MongoDB connection
@@ -72,6 +73,7 @@ async def get_status_checks() -> List[Dict[str, Any]]:
 
 # Mount auth routes under /api
 api_router.include_router(auth_router)
+api_router.include_router(past_papers_router)
 
 # Include the router in the main app
 app.include_router(api_router)

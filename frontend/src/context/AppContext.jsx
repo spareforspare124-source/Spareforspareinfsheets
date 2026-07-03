@@ -98,6 +98,25 @@ export function AppProvider({ children }) {
     else root.classList.remove('dark');
   }, [state.theme]);
 
+  // Sync past papers from backend once we finish hydrating from localStorage.
+  // Backend is the source of truth; localStorage only serves as a fast preview.
+  useEffect(() => {
+    if (!loaded) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const list = await apiCall('/api/past-papers');
+        if (!cancelled && Array.isArray(list)) {
+          setState((s) => ({ ...s, pastPapers: list }));
+        }
+      } catch (err) {
+        // Backend may be temporarily unreachable; keep local cache and try again on next load.
+        logError('past-papers/hydrate', err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [loaded]);
+
   const toggleTheme = useCallback(() => {
     setState((s) => ({ ...s, theme: s.theme === 'dark' ? 'light' : 'dark' }));
   }, []);
@@ -285,16 +304,50 @@ export function AppProvider({ children }) {
     setState((s) => ({ ...s, courses: s.courses.map((c) => (c.id === id ? { ...c, ...patch } : c)) }));
   }, []);
 
-  const addPastPaper = useCallback((pp) => {
-    setState((s) => ({
-      ...s,
-      pastPapers: [{ id: `pp_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`, addedAt: new Date().toISOString(), ...pp }, ...(s.pastPapers || [])],
-    }));
+  const refreshPastPapers = useCallback(async () => {
+    try {
+      const list = await apiCall('/api/past-papers');
+      setState((s) => ({ ...s, pastPapers: Array.isArray(list) ? list : [] }));
+      return list;
+    } catch (err) {
+      logError('past-papers/list', err);
+      return null;
+    }
   }, []);
 
-  const removePastPaper = useCallback((id) => {
-    setState((s) => ({ ...s, pastPapers: (s.pastPapers || []).filter((p) => p.id !== id) }));
+  const addPastPaper = useCallback(async (pp) => {
+    // Optimistic client-side add so the UI stays snappy even if the backend is slow.
+    const tempId = `pp_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const optimistic = { id: tempId, addedAt: new Date().toISOString(), source: 'past-paper', ...pp };
+    setState((s) => ({ ...s, pastPapers: [optimistic, ...(s.pastPapers || [])] }));
+    try {
+      const saved = await apiCall('/api/past-papers', { method: 'POST', body: JSON.stringify(pp) });
+      // Replace optimistic entry with the server-authoritative one.
+      setState((s) => ({
+        ...s,
+        pastPapers: (s.pastPapers || []).map((p) => (p.id === tempId ? saved : p)),
+      }));
+      return saved;
+    } catch (err) {
+      logError('past-papers/create', err);
+      // Roll back the optimistic add.
+      setState((s) => ({ ...s, pastPapers: (s.pastPapers || []).filter((p) => p.id !== tempId) }));
+      throw err;
+    }
   }, []);
+
+  const removePastPaper = useCallback(async (id) => {
+    const before = state.pastPapers || [];
+    setState((s) => ({ ...s, pastPapers: (s.pastPapers || []).filter((p) => p.id !== id) }));
+    try {
+      await apiCall(`/api/past-papers/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    } catch (err) {
+      logError('past-papers/delete', err);
+      // Rollback if the server rejected the delete.
+      setState((s) => ({ ...s, pastPapers: before }));
+      throw err;
+    }
+  }, [state.pastPapers]);
 
   // Stable context value — prevents needless rerenders of every consumer.
   const value = useMemo(() => ({
@@ -319,6 +372,7 @@ export function AppProvider({ children }) {
     updateCourse,
     addPastPaper,
     removePastPaper,
+    refreshPastPapers,
     toggleTheme,
     startDemo,
     completeOnboarding,
@@ -345,6 +399,7 @@ export function AppProvider({ children }) {
     updateCourse,
     addPastPaper,
     removePastPaper,
+    refreshPastPapers,
     toggleTheme,
     startDemo,
     completeOnboarding,
