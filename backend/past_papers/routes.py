@@ -8,12 +8,19 @@ If you need to lock this down, add a dependency on `require_admin` from
 
 from __future__ import annotations
 
+import json
+import os
+import re
+import tempfile
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException, Query, Request, Response, status
+from dotenv import load_dotenv
+from fastapi import APIRouter, File, HTTPException, Query, Request, Response, UploadFile, status
 from pydantic import BaseModel, ConfigDict, Field
+
+load_dotenv()
 
 
 router = APIRouter(prefix="/past-papers", tags=["past-papers"])
@@ -36,6 +43,7 @@ class PastPaperIn(BaseModel):
     year: Optional[int] = None
     board: Optional[str] = None
     marks: Optional[int] = None
+    link: Optional[str] = None  # optional URL reference (source paper, syllabus, video, etc.)
     # MCQ
     options: Optional[List[str]] = None
     a: Optional[int] = None
@@ -113,3 +121,174 @@ async def delete_past_paper(pp_id: str, request: Request) -> Response:
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Past-paper question not found")
     return Response(status_code=204)
+
+
+# ---------------------------------------------------------------------------
+# Bulk PDF extraction using an LLM (Gemini via emergentintegrations)
+# ---------------------------------------------------------------------------
+
+_EXTRACTION_SYSTEM_PROMPT = """You are an expert exam-paper parser. You extract structured questions from a past-paper PDF.
+
+Return ONLY a raw JSON object, no prose, no code fences, matching this exact schema:
+{
+  "questions": [
+    {
+      "q": "string, the question text as it appears (drop question numbers like 'Q1.')",
+      "answerType": "Multiple choice" | "Typed response" | "Exam style",
+      "difficulty": "Easy" | "Medium" | "Exam level" | "Hard",
+      "marks": integer or null,
+      "topic": "string, a short topic label for this question or null",
+      "options": ["A", "B", "C", "D"] | null,   // only for Multiple choice
+      "a": 0 | null,                            // zero-based correct index, only for Multiple choice
+      "typedAnswer": "string or null",          // only for Typed response
+      "examAnswer": "string or null",           // only for Exam style
+      "examKeywords": ["kw1","kw2"] | null      // only for Exam style
+    }
+  ]
+}
+
+Guidelines:
+- If a question is worth multiple marks or asks for explanation, tag it "Exam style".
+- If it expects a short symbolic / numeric / single-word answer, tag it "Typed response".
+- If the paper provides multiple options (A B C D), tag it "Multiple choice" and set the correct index if available.
+- Only include questions that are clearly complete. Skip diagrams-only questions and instructions.
+- Never invent options or answers you can't see. Set unknown fields to null.
+- Do not include markdown or commentary."""
+
+
+def _extract_json_object(text: str) -> Dict[str, Any]:
+    """Best-effort extraction of a JSON object from an LLM response."""
+    if not text:
+        raise HTTPException(status_code=502, detail="LLM returned an empty response")
+    # Strip common wrappers
+    stripped = text.strip()
+    stripped = re.sub(r"^```(?:json)?", "", stripped).strip()
+    stripped = re.sub(r"```$", "", stripped).strip()
+    try:
+        return json.loads(stripped)
+    except json.JSONDecodeError:
+        pass
+    # Fall back to finding the first {...} block.
+    match = re.search(r"\{[\s\S]*\}", stripped)
+    if not match:
+        raise HTTPException(status_code=502, detail="Could not parse JSON from LLM output")
+    try:
+        return json.loads(match.group(0))
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=502, detail=f"LLM produced invalid JSON: {exc}") from exc
+
+
+_ALLOWED_ANSWER_TYPES = ANSWER_TYPES
+_ALLOWED_DIFFICULTIES = DIFFICULTIES
+
+
+def _sanitize_extracted(raw: Dict[str, Any], defaults: Dict[str, Any]) -> List[Dict[str, Any]]:
+    items = raw.get("questions") if isinstance(raw, dict) else None
+    if not isinstance(items, list):
+        raise HTTPException(status_code=502, detail="LLM output missing 'questions' array")
+    out: List[Dict[str, Any]] = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        q_text = (item.get("q") or "").strip()
+        if not q_text:
+            continue
+        answer_type = item.get("answerType") if item.get("answerType") in _ALLOWED_ANSWER_TYPES else "Multiple choice"
+        difficulty = item.get("difficulty") if item.get("difficulty") in _ALLOWED_DIFFICULTIES else defaults.get("difficulty", "Medium")
+        cleaned: Dict[str, Any] = {
+            "q": q_text,
+            "answerType": answer_type,
+            "difficulty": difficulty,
+            "subject": defaults.get("subject", "") or (item.get("subject") or ""),
+            "topic": (item.get("topic") or defaults.get("topic") or "").strip() or defaults.get("topic", ""),
+            "year": defaults.get("year"),
+            "board": defaults.get("board"),
+            "marks": item.get("marks") if isinstance(item.get("marks"), int) else None,
+            "link": defaults.get("link"),
+        }
+        if answer_type == "Multiple choice":
+            opts = item.get("options") or []
+            if isinstance(opts, list):
+                cleaned["options"] = [str(o) for o in opts]
+                a = item.get("a")
+                cleaned["a"] = a if isinstance(a, int) and 0 <= a < len(cleaned["options"]) else 0
+        elif answer_type == "Typed response":
+            cleaned["typedAnswer"] = (item.get("typedAnswer") or "").strip() or None
+            cleaned["typedAliases"] = []
+        elif answer_type == "Exam style":
+            cleaned["examAnswer"] = (item.get("examAnswer") or "").strip() or None
+            kws = item.get("examKeywords") or []
+            cleaned["examKeywords"] = [str(k).strip() for k in kws if str(k).strip()] if isinstance(kws, list) else []
+        out.append(cleaned)
+    return out
+
+
+@router.post("/extract")
+async def extract_past_papers_from_pdf(
+    file: UploadFile = File(...),
+    subject: str = Query(""),
+    topic: str = Query(""),
+    year: Optional[int] = Query(None),
+    board: Optional[str] = Query(None),
+    difficulty: str = Query("Medium"),
+    link: Optional[str] = Query(None),
+) -> Dict[str, Any]:
+    """Accept a PDF past paper, run it through an LLM, and return a list of
+    extracted question dicts. The caller (admin UI) can then review each one
+    and POST them individually to /api/past-papers to save.
+    """
+    if not file.filename or not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=422, detail="Only PDF uploads are supported")
+
+    api_key = os.environ.get("EMERGENT_LLM_KEY")
+    if not api_key:
+        raise HTTPException(status_code=503, detail="LLM key not configured on the server")
+
+    # Persist upload to a temp file — the emergentintegrations Gemini client reads
+    # from a file path.
+    contents = await file.read()
+    if not contents:
+        raise HTTPException(status_code=422, detail="Uploaded PDF is empty")
+
+    try:
+        # Import locally so a missing library doesn't take down the whole router.
+        from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithMimeType
+    except Exception as exc:  # pragma: no cover
+        raise HTTPException(status_code=503, detail=f"LLM library unavailable: {exc}") from exc
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tf:
+        tf.write(contents)
+        tmp_path = tf.name
+
+    try:
+        chat = (
+            LlmChat(
+                api_key=api_key,
+                session_id=f"pp-extract-{uuid.uuid4().hex[:12]}",
+                system_message=_EXTRACTION_SYSTEM_PROMPT,
+            )
+            .with_model("gemini", "gemini-2.5-flash")
+        )
+        pdf_file = FileContentWithMimeType(file_path=tmp_path, mime_type="application/pdf")
+        user_prompt = (
+            "Extract every clearly-complete past-paper question from the attached PDF and "
+            "return the JSON described in the system prompt. If the paper looks like it belongs "
+            f"to the subject '{subject or 'unknown'}', tag topics accordingly. Return JSON only."
+        )
+        response_text = await chat.send_message(UserMessage(text=user_prompt, file_contents=[pdf_file]))
+        parsed = _extract_json_object(response_text or "")
+        defaults = {
+            "subject": subject,
+            "topic": topic,
+            "year": year,
+            "board": board,
+            "difficulty": difficulty if difficulty in _ALLOWED_DIFFICULTIES else "Medium",
+            "link": link,
+        }
+        questions = _sanitize_extracted(parsed, defaults)
+        return {"questions": questions, "count": len(questions)}
+    finally:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass

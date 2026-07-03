@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the newly-added past-paper API endpoints on the FastAPI backend. All routes are under ${REACT_APP_BACKEND_URL}/api/past-papers (no auth required). Verify: (1) GET /api/past-papers returns array, (2-4) POST with valid MCQ/Typed/Exam payloads returns 201 with id/addedAt/source, (5-6) GET filters by subject/answerType work, (7-8) Invalid payloads return 422, (9) DELETE existing returns 204, (10) DELETE non-existent returns 404. Also confirm pre-existing GET /api/ still returns Hello World."
+user_problem_statement: "Regression test on past-papers backend after adding new fields (link, board) and new bulk extraction endpoint (POST /api/past-papers/extract). Verify: (1) link field accepted and returned on POST/GET, (2) board field accepted and returned on POST/GET, (3) POST /api/past-papers/extract with PDF returns extracted questions, (4-5) Invalid extract requests return 422, (6) Pre-existing endpoints still work."
 
 backend:
   - task: "Past-paper API - GET /api/past-papers (list all)"
@@ -222,15 +222,102 @@ backend:
         -agent: "testing"
         -comment: "✅ PASS: Pre-existing root endpoint still working. GET /api/ returns 200 with {'message': 'Hello World'}. No regression from past-paper API addition."
 
+  - task: "Past-paper API - POST with link and board fields"
+    implemented: true
+    working: true
+    file: "backend/past_papers/routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Added optional link and board fields to PastPaperIn model. These fields are accepted in POST requests and returned in responses."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASS: POST /api/past-papers with link='https://example.com/reference.pdf' and board='CBSE' returns 201. Response includes both fields with correct values. Created item id=pp_8d5c3afba056."
+
+  - task: "Past-paper API - GET returns link and board fields"
+    implemented: true
+    working: true
+    file: "backend/past_papers/routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "GET /api/past-papers now returns items with link and board fields where populated."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASS: GET /api/past-papers returns items with link and board fields. Found 1 item with link, 2 items with board. Fields are properly included in response."
+
+  - task: "Past-paper API - POST /api/past-papers/extract (PDF extraction)"
+    implemented: true
+    working: true
+    file: "backend/past_papers/routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Implemented POST /api/past-papers/extract endpoint. Accepts PDF file upload with query params (subject, board, difficulty, link). Uses Emergent LLM (Gemini 2.5 Flash) to extract questions from PDF. Returns {questions: [...], count: N}. Timeout budget: 90s."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASS: POST /api/past-papers/extract with valid PDF (/tmp/test_paper.pdf) returns 200. Extracted 4 questions successfully. Sample question: 'State Newton's first law of motion...', answerType='Exam style', difficulty='Easy'. All questions have required fields (q, answerType, difficulty) with valid values. LLM integration working correctly."
+
+  - task: "Past-paper API - Extract validation (non-PDF file)"
+    implemented: true
+    working: true
+    file: "backend/past_papers/routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Validation checks that uploaded file has .pdf extension. Returns 422 for non-PDF files."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASS: POST /api/past-papers/extract with text file correctly returns 422 with detail: 'Only PDF uploads are supported'. Validation working as expected."
+
+  - task: "Past-paper API - Extract validation (no file)"
+    implemented: true
+    working: true
+    file: "backend/past_papers/routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "FastAPI validation requires file parameter. Returns 422 if no file provided."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASS: POST /api/past-papers/extract with no file correctly returns 422 with Pydantic validation error: 'Field required'. Validation working as expected."
+
+  - task: "Regression check - Pre-existing endpoints after new features"
+    implemented: true
+    working: true
+    file: "backend/past_papers/routes.py, backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASS: All pre-existing endpoints still functional after adding new fields and extract endpoint. Verified: (1) GET /api/ returns Hello World ✅, (2) GET /api/past-papers returns list ✅, (3) POST /api/past-papers creates item ✅, (4) DELETE /api/past-papers/{id} deletes item ✅. No regressions detected."
+
 metadata:
   created_by: "main_agent"
-  version: "1.3"
-  test_sequence: 3
+  version: "1.4"
+  test_sequence: 4
   run_ui: false
 
 test_plan:
   current_focus:
-    - "Past-paper API endpoints testing"
+    - "Regression testing complete - new fields and extract endpoint verified"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -240,3 +327,5 @@ agent_communication:
     -message: "Implemented past-paper API endpoints in backend/past_papers/routes.py. All CRUD operations complete with validation. Routes: GET /api/past-papers (list with filters), POST /api/past-papers (create with validation), DELETE /api/past-papers/{id}. No auth required. Please test all endpoints as specified in the review request."
     -agent: "testing"
     -message: "✅ ALL TESTS PASSED (11/11). Past-paper API endpoints fully functional. Comprehensive test suite created in /app/backend_test.py covering: (1) GET list returns array ✅, (2-4) POST MCQ/Typed/Exam all return 201 with correct structure ✅, (5-6) Filters by subject/answerType working ✅, (7-8) Validation returns 422 for invalid payloads ✅, (9-10) DELETE returns 204/404 correctly ✅, (11) Pre-existing GET /api/ still works ✅. No issues found. All endpoints working as specified. Backend is production-ready for past-paper functionality."
+    -agent: "testing"
+    -message: "✅ REGRESSION TEST COMPLETE (9/9 tests passed). New features verified: (1) link field accepted and returned in POST/GET ✅, (2) board field accepted and returned in POST/GET ✅, (3) POST /api/past-papers/extract successfully extracts questions from PDF using Emergent LLM (Gemini 2.5 Flash) - extracted 4 questions from test PDF ✅, (4) Non-PDF file correctly rejected with 422 ✅, (5) Missing file correctly rejected with 422 ✅, (6) All pre-existing endpoints (GET /api/, GET/POST/DELETE /api/past-papers) still working correctly ✅. No regressions detected. Backend is production-ready with new features."

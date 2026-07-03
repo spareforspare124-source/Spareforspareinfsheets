@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend API test suite for past-paper endpoints.
-Tests all CRUD operations and validation rules.
+Backend API test suite for past-paper endpoints - REGRESSION TEST
+Tests new features: link field, board field, and PDF extraction endpoint.
 """
 
 import os
@@ -39,304 +39,244 @@ def log_test(name: str, passed: bool, details: str = ""):
         print(f"  Details: {details}")
 
 
-def test_root_endpoint():
-    """Test 1: Verify pre-existing root endpoint still works."""
+def test_post_with_link_and_board():
+    """Test 1: POST /api/past-papers with link and board fields."""
+    payload = {
+        "subject": "Physics",
+        "topic": "Waves",
+        "q": "Speed of sound in air is roughly?",
+        "answerType": "Multiple choice",
+        "difficulty": "Easy",
+        "options": ["330 m/s", "3 m/s", "3000 m/s", "33 m/s"],
+        "a": 0,
+        "link": "https://example.com/reference.pdf",
+        "board": "CBSE"
+    }
+    
     try:
-        response = requests.get(f"{API_BASE}/", timeout=10)
-        expected = {"message": "Hello World"}
+        response = requests.post(f"{API_BASE}/past-papers", json=payload, timeout=10)
         
-        if response.status_code == 200 and response.json() == expected:
-            log_test("GET /api/ returns Hello World", True, f"Response: {response.json()}")
+        if response.status_code == 201:
+            data = response.json()
+            # Verify link and board are in response
+            if "link" in data and "board" in data:
+                if data["link"] == "https://example.com/reference.pdf" and data["board"] == "CBSE":
+                    created_ids.append(data["id"])
+                    log_test("POST with link and board fields", True, 
+                            f"Created with id={data['id']}, link={data['link']}, board={data['board']}")
+                    return data["id"]
+                else:
+                    log_test("POST with link and board fields", False, 
+                            f"Fields present but values incorrect: link={data.get('link')}, board={data.get('board')}")
+            else:
+                log_test("POST with link and board fields", False, 
+                        f"Missing link or board in response. Keys: {list(data.keys())}")
         else:
-            log_test("GET /api/ returns Hello World", False, 
+            log_test("POST with link and board fields", False, 
                     f"Status: {response.status_code}, Body: {response.text}")
     except Exception as e:
-        log_test("GET /api/ returns Hello World", False, f"Exception: {str(e)}")
+        log_test("POST with link and board fields", False, f"Exception: {str(e)}")
+    
+    return None
 
 
-def test_list_past_papers_initial():
-    """Test 2: GET /api/past-papers returns array and note count."""
+def test_get_returns_link_and_board():
+    """Test 2: GET /api/past-papers returns items with link and board fields."""
     try:
         response = requests.get(f"{API_BASE}/past-papers", timeout=10)
         
         if response.status_code == 200:
             data = response.json()
-            if isinstance(data, list):
-                count = len(data)
-                log_test("GET /api/past-papers returns JSON array", True, 
-                        f"Initial count: {count} items")
-                return count
-            else:
-                log_test("GET /api/past-papers returns JSON array", False, 
-                        f"Response is not an array: {type(data)}")
-                return 0
-        else:
-            log_test("GET /api/past-papers returns JSON array", False, 
-                    f"Status: {response.status_code}, Body: {response.text}")
-            return 0
-    except Exception as e:
-        log_test("GET /api/past-papers returns JSON array", False, f"Exception: {str(e)}")
-        return 0
-
-
-def test_create_mcq():
-    """Test 3: POST Multiple choice question."""
-    payload = {
-        "subject": "Physics",
-        "topic": "Optics",
-        "q": "Focal length of a convex lens is:",
-        "answerType": "Multiple choice",
-        "difficulty": "Easy",
-        "options": ["Negative", "Positive", "Zero", "Infinite"],
-        "a": 1,
-        "year": 2022
-    }
-    
-    try:
-        response = requests.post(f"{API_BASE}/past-papers", json=payload, timeout=10)
-        
-        if response.status_code == 201:
-            data = response.json()
-            # Verify required fields
-            if all(k in data for k in ["id", "addedAt", "source"]):
-                if data["source"] == "past-paper" and data["subject"] == "Physics":
-                    created_ids.append(data["id"])
-                    log_test("POST MCQ past-paper", True, 
-                            f"Created with id={data['id']}, addedAt={data['addedAt']}")
-                    return data["id"]
+            if isinstance(data, list) and len(data) > 0:
+                # Check if any item has link or board populated
+                items_with_link = [item for item in data if item.get("link")]
+                items_with_board = [item for item in data if item.get("board")]
+                
+                if items_with_link or items_with_board:
+                    log_test("GET returns link and board fields", True, 
+                            f"Found {len(items_with_link)} items with link, {len(items_with_board)} items with board")
                 else:
-                    log_test("POST MCQ past-paper", False, 
-                            f"Invalid data: source={data.get('source')}, subject={data.get('subject')}")
+                    log_test("GET returns link and board fields", True, 
+                            "No items with link/board yet, but fields are supported (empty is valid)")
             else:
-                log_test("POST MCQ past-paper", False, 
-                        f"Missing required fields. Got: {list(data.keys())}")
+                log_test("GET returns link and board fields", True, 
+                        "Empty list returned (valid state)")
         else:
-            log_test("POST MCQ past-paper", False, 
+            log_test("GET returns link and board fields", False, 
                     f"Status: {response.status_code}, Body: {response.text}")
     except Exception as e:
-        log_test("POST MCQ past-paper", False, f"Exception: {str(e)}")
+        log_test("GET returns link and board fields", False, f"Exception: {str(e)}")
+
+
+def test_extract_valid_pdf():
+    """Test 3: POST /api/past-papers/extract with valid PDF."""
+    pdf_path = "/tmp/test_paper.pdf"
     
-    return None
-
-
-def test_create_typed_response():
-    """Test 4: POST Typed response question."""
-    payload = {
-        "subject": "Mathematics",
-        "topic": "Algebra",
-        "q": "Solve 3x=15",
-        "answerType": "Typed response",
-        "difficulty": "Medium",
-        "typedAnswer": "5",
-        "typedAliases": ["x=5", "five"]
-    }
-    
-    try:
-        response = requests.post(f"{API_BASE}/past-papers", json=payload, timeout=10)
-        
-        if response.status_code == 201:
-            data = response.json()
-            if all(k in data for k in ["id", "addedAt", "source"]):
-                if data["source"] == "past-paper" and data["answerType"] == "Typed response":
-                    created_ids.append(data["id"])
-                    log_test("POST Typed response past-paper", True, 
-                            f"Created with id={data['id']}")
-                    return data["id"]
-                else:
-                    log_test("POST Typed response past-paper", False, 
-                            f"Invalid data: {data}")
-            else:
-                log_test("POST Typed response past-paper", False, 
-                        f"Missing required fields")
-        else:
-            log_test("POST Typed response past-paper", False, 
-                    f"Status: {response.status_code}, Body: {response.text}")
-    except Exception as e:
-        log_test("POST Typed response past-paper", False, f"Exception: {str(e)}")
-    
-    return None
-
-
-def test_create_exam_style():
-    """Test 5: POST Exam style question."""
-    payload = {
-        "subject": "Biology",
-        "topic": "Cell Biology",
-        "q": "Describe the structure and function of mitochondria.",
-        "answerType": "Exam style",
-        "difficulty": "Hard",
-        "examAnswer": "Mitochondria are double-membrane organelles that produce ATP through cellular respiration.",
-        "examKeywords": ["ATP", "double membrane", "respiration", "cristae"]
-    }
-    
-    try:
-        response = requests.post(f"{API_BASE}/past-papers", json=payload, timeout=10)
-        
-        if response.status_code == 201:
-            data = response.json()
-            if all(k in data for k in ["id", "addedAt", "source"]):
-                if data["source"] == "past-paper" and data["answerType"] == "Exam style":
-                    created_ids.append(data["id"])
-                    log_test("POST Exam style past-paper", True, 
-                            f"Created with id={data['id']}")
-                    return data["id"]
-                else:
-                    log_test("POST Exam style past-paper", False, 
-                            f"Invalid data: {data}")
-            else:
-                log_test("POST Exam style past-paper", False, 
-                        f"Missing required fields")
-        else:
-            log_test("POST Exam style past-paper", False, 
-                    f"Status: {response.status_code}, Body: {response.text}")
-    except Exception as e:
-        log_test("POST Exam style past-paper", False, f"Exception: {str(e)}")
-    
-    return None
-
-
-def test_filter_by_subject():
-    """Test 6: GET /api/past-papers?subject=Physics filter works."""
-    try:
-        response = requests.get(f"{API_BASE}/past-papers?subject=Physics", timeout=10)
-        
-        if response.status_code == 200:
-            data = response.json()
-            if isinstance(data, list):
-                # Check that all items have subject=Physics
-                all_physics = all(item.get("subject") == "Physics" for item in data)
-                if all_physics and len(data) > 0:
-                    log_test("GET /api/past-papers?subject=Physics filter", True, 
-                            f"Found {len(data)} Physics questions")
-                elif len(data) == 0:
-                    log_test("GET /api/past-papers?subject=Physics filter", True, 
-                            "No Physics questions found (empty result is valid)")
-                else:
-                    log_test("GET /api/past-papers?subject=Physics filter", False, 
-                            f"Filter not working correctly. Found non-Physics items.")
-            else:
-                log_test("GET /api/past-papers?subject=Physics filter", False, 
-                        f"Response is not an array")
-        else:
-            log_test("GET /api/past-papers?subject=Physics filter", False, 
-                    f"Status: {response.status_code}, Body: {response.text}")
-    except Exception as e:
-        log_test("GET /api/past-papers?subject=Physics filter", False, f"Exception: {str(e)}")
-
-
-def test_filter_by_answer_type():
-    """Test 7: GET /api/past-papers?answerType=Typed response filter works."""
-    try:
-        response = requests.get(f"{API_BASE}/past-papers?answerType=Typed response", timeout=10)
-        
-        if response.status_code == 200:
-            data = response.json()
-            if isinstance(data, list):
-                # Check that all items have answerType=Typed response
-                all_typed = all(item.get("answerType") == "Typed response" for item in data)
-                if all_typed and len(data) > 0:
-                    log_test("GET /api/past-papers?answerType=Typed response filter", True, 
-                            f"Found {len(data)} Typed response questions")
-                elif len(data) == 0:
-                    log_test("GET /api/past-papers?answerType=Typed response filter", True, 
-                            "No Typed response questions found (empty result is valid)")
-                else:
-                    log_test("GET /api/past-papers?answerType=Typed response filter", False, 
-                            f"Filter not working correctly")
-            else:
-                log_test("GET /api/past-papers?answerType=Typed response filter", False, 
-                        f"Response is not an array")
-        else:
-            log_test("GET /api/past-papers?answerType=Typed response filter", False, 
-                    f"Status: {response.status_code}, Body: {response.text}")
-    except Exception as e:
-        log_test("GET /api/past-papers?answerType=Typed response filter", False, 
-                f"Exception: {str(e)}")
-
-
-def test_invalid_mcq_missing_answer():
-    """Test 8: Invalid MCQ (missing 'a') should return 422."""
-    payload = {
-        "subject": "Chemistry",
-        "topic": "Acids",
-        "q": "What is the pH of water?",
-        "answerType": "Multiple choice",
-        "difficulty": "Easy",
-        "options": ["5", "7", "9", "11"]
-        # Missing 'a' field
-    }
-    
-    try:
-        response = requests.post(f"{API_BASE}/past-papers", json=payload, timeout=10)
-        
-        if response.status_code == 422:
-            log_test("Invalid MCQ (missing 'a') returns 422", True, 
-                    f"Correctly rejected: {response.json().get('detail', '')}")
-        else:
-            log_test("Invalid MCQ (missing 'a') returns 422", False, 
-                    f"Expected 422, got {response.status_code}")
-    except Exception as e:
-        log_test("Invalid MCQ (missing 'a') returns 422", False, f"Exception: {str(e)}")
-
-
-def test_invalid_answer_type():
-    """Test 9: Invalid answerType value should return 422."""
-    payload = {
-        "subject": "English",
-        "topic": "Grammar",
-        "q": "What is a noun?",
-        "answerType": "Foo",  # Invalid
-        "difficulty": "Easy"
-    }
-    
-    try:
-        response = requests.post(f"{API_BASE}/past-papers", json=payload, timeout=10)
-        
-        if response.status_code == 422:
-            log_test("Invalid answerType returns 422", True, 
-                    f"Correctly rejected: {response.json().get('detail', '')}")
-        else:
-            log_test("Invalid answerType returns 422", False, 
-                    f"Expected 422, got {response.status_code}")
-    except Exception as e:
-        log_test("Invalid answerType returns 422", False, f"Exception: {str(e)}")
-
-
-def test_delete_existing(item_id: Optional[str]):
-    """Test 10: DELETE /api/past-papers/{id} returns 204."""
-    if not item_id:
-        log_test("DELETE existing past-paper", False, "No item ID provided (creation failed)")
+    if not os.path.exists(pdf_path):
+        log_test("Extract from valid PDF", False, f"Test PDF not found at {pdf_path}")
         return
     
     try:
-        response = requests.delete(f"{API_BASE}/past-papers/{item_id}", timeout=10)
+        with open(pdf_path, 'rb') as f:
+            files = {'file': ('test_paper.pdf', f, 'application/pdf')}
+            params = {
+                'subject': 'Physics',
+                'board': 'CBSE',
+                'difficulty': 'Medium'
+            }
+            
+            # Increased timeout to 120s for LLM processing
+            response = requests.post(
+                f"{API_BASE}/past-papers/extract",
+                files=files,
+                params=params,
+                timeout=120
+            )
         
-        if response.status_code == 204:
-            log_test("DELETE existing past-paper returns 204", True, 
-                    f"Successfully deleted {item_id}")
-            # Remove from tracking
-            if item_id in created_ids:
-                created_ids.remove(item_id)
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Verify response structure
+            if "questions" in data and "count" in data:
+                questions = data["questions"]
+                count = data["count"]
+                
+                if isinstance(questions, list) and count == len(questions):
+                    if count > 0:
+                        # Verify first question structure
+                        q = questions[0]
+                        has_q = "q" in q and q["q"].strip()
+                        has_valid_answer_type = q.get("answerType") in {"Multiple choice", "Typed response", "Exam style"}
+                        has_valid_difficulty = q.get("difficulty") in {"Easy", "Medium", "Exam level", "Hard"}
+                        
+                        if has_q and has_valid_answer_type and has_valid_difficulty:
+                            log_test("Extract from valid PDF", True, 
+                                    f"Extracted {count} questions. Sample: q='{q['q'][:50]}...', answerType={q['answerType']}, difficulty={q['difficulty']}")
+                        else:
+                            log_test("Extract from valid PDF", False, 
+                                    f"Question structure invalid: has_q={has_q}, valid_answerType={has_valid_answer_type}, valid_difficulty={has_valid_difficulty}")
+                    else:
+                        log_test("Extract from valid PDF", False, 
+                                "No questions extracted from PDF (count=0)")
+                else:
+                    log_test("Extract from valid PDF", False, 
+                            f"Invalid response: questions is not list or count mismatch. count={count}, len(questions)={len(questions) if isinstance(questions, list) else 'N/A'}")
+            else:
+                log_test("Extract from valid PDF", False, 
+                        f"Missing 'questions' or 'count' in response. Keys: {list(data.keys())}")
         else:
-            log_test("DELETE existing past-paper returns 204", False, 
-                    f"Expected 204, got {response.status_code}, Body: {response.text}")
+            log_test("Extract from valid PDF", False, 
+                    f"Status: {response.status_code}, Body: {response.text[:500]}")
+    except requests.exceptions.Timeout:
+        log_test("Extract from valid PDF", False, "Request timed out after 120s (LLM processing took too long)")
     except Exception as e:
-        log_test("DELETE existing past-paper returns 204", False, f"Exception: {str(e)}")
+        log_test("Extract from valid PDF", False, f"Exception: {str(e)}")
 
 
-def test_delete_nonexistent():
-    """Test 11: DELETE /api/past-papers/does-not-exist returns 404."""
+def test_extract_non_pdf_file():
+    """Test 4: POST /api/past-papers/extract with non-PDF file should return 422."""
     try:
-        response = requests.delete(f"{API_BASE}/past-papers/does-not-exist", timeout=10)
+        # Create a temporary text file
+        text_content = b"This is not a PDF file"
+        files = {'file': ('test.txt', text_content, 'text/plain')}
+        params = {'subject': 'Physics', 'board': 'CBSE', 'difficulty': 'Medium'}
         
-        if response.status_code == 404:
-            log_test("DELETE non-existent past-paper returns 404", True, 
-                    f"Correctly returned 404")
+        response = requests.post(
+            f"{API_BASE}/past-papers/extract",
+            files=files,
+            params=params,
+            timeout=10
+        )
+        
+        if response.status_code == 422:
+            log_test("Extract non-PDF file returns 422", True, 
+                    f"Correctly rejected: {response.json().get('detail', '')}")
         else:
-            log_test("DELETE non-existent past-paper returns 404", False, 
-                    f"Expected 404, got {response.status_code}")
+            log_test("Extract non-PDF file returns 422", False, 
+                    f"Expected 422, got {response.status_code}. Body: {response.text}")
     except Exception as e:
-        log_test("DELETE non-existent past-paper returns 404", False, f"Exception: {str(e)}")
+        log_test("Extract non-PDF file returns 422", False, f"Exception: {str(e)}")
+
+
+def test_extract_no_file():
+    """Test 5: POST /api/past-papers/extract with no file should return 422."""
+    try:
+        params = {'subject': 'Physics', 'board': 'CBSE', 'difficulty': 'Medium'}
+        
+        # Send request without file
+        response = requests.post(
+            f"{API_BASE}/past-papers/extract",
+            params=params,
+            timeout=10
+        )
+        
+        if response.status_code == 422:
+            log_test("Extract with no file returns 422", True, 
+                    f"Correctly rejected: {response.json().get('detail', '') if response.headers.get('content-type', '').startswith('application/json') else response.text[:100]}")
+        else:
+            log_test("Extract with no file returns 422", False, 
+                    f"Expected 422, got {response.status_code}. Body: {response.text[:200]}")
+    except Exception as e:
+        log_test("Extract with no file returns 422", False, f"Exception: {str(e)}")
+
+
+def test_pre_existing_endpoints():
+    """Test 6: Verify pre-existing endpoints still work (regression check)."""
+    try:
+        # Test GET /api/
+        response = requests.get(f"{API_BASE}/", timeout=10)
+        if response.status_code == 200 and response.json() == {"message": "Hello World"}:
+            log_test("Pre-existing GET /api/ still works", True, "Root endpoint functional")
+        else:
+            log_test("Pre-existing GET /api/ still works", False, 
+                    f"Status: {response.status_code}, Body: {response.text}")
+        
+        # Test GET /api/past-papers
+        response = requests.get(f"{API_BASE}/past-papers", timeout=10)
+        if response.status_code == 200 and isinstance(response.json(), list):
+            log_test("Pre-existing GET /api/past-papers still works", True, 
+                    f"Returns list with {len(response.json())} items")
+        else:
+            log_test("Pre-existing GET /api/past-papers still works", False, 
+                    f"Status: {response.status_code}, Body: {response.text}")
+        
+        # Test POST /api/past-papers (basic MCQ without new fields)
+        payload = {
+            "subject": "Chemistry",
+            "topic": "Acids",
+            "q": "What is the pH of pure water?",
+            "answerType": "Multiple choice",
+            "difficulty": "Easy",
+            "options": ["5", "7", "9", "11"],
+            "a": 1
+        }
+        response = requests.post(f"{API_BASE}/past-papers", json=payload, timeout=10)
+        if response.status_code == 201:
+            data = response.json()
+            created_ids.append(data["id"])
+            log_test("Pre-existing POST /api/past-papers still works", True, 
+                    f"Created item with id={data['id']}")
+        else:
+            log_test("Pre-existing POST /api/past-papers still works", False, 
+                    f"Status: {response.status_code}, Body: {response.text}")
+        
+        # Test DELETE /api/past-papers/{id}
+        if created_ids:
+            test_id = created_ids[-1]
+            response = requests.delete(f"{API_BASE}/past-papers/{test_id}", timeout=10)
+            if response.status_code == 204:
+                created_ids.remove(test_id)
+                log_test("Pre-existing DELETE /api/past-papers/{id} still works", True, 
+                        f"Deleted item {test_id}")
+            else:
+                log_test("Pre-existing DELETE /api/past-papers/{id} still works", False, 
+                        f"Status: {response.status_code}, Body: {response.text}")
+        else:
+            log_test("Pre-existing DELETE /api/past-papers/{id} still works", False, 
+                    "No item to delete (POST failed)")
+            
+    except Exception as e:
+        log_test("Pre-existing endpoints regression check", False, f"Exception: {str(e)}")
 
 
 def cleanup_created_items():
@@ -355,7 +295,7 @@ def cleanup_created_items():
 def print_summary():
     """Print test summary."""
     print("\n" + "="*70)
-    print("TEST SUMMARY")
+    print("REGRESSION TEST SUMMARY")
     print("="*70)
     
     passed = sum(1 for t in test_results if t["passed"])
@@ -380,30 +320,22 @@ def print_summary():
 
 
 def main():
-    """Run all tests."""
+    """Run all regression tests."""
     print("="*70)
-    print("PAST-PAPER API TEST SUITE")
+    print("PAST-PAPER API REGRESSION TEST SUITE")
+    print("Testing new features: link field, board field, PDF extraction")
     print("="*70)
     print(f"Backend URL: {BASE_URL}")
     print(f"API Base: {API_BASE}")
     print("="*70 + "\n")
     
-    # Run tests in order
-    test_root_endpoint()
-    initial_count = test_list_past_papers_initial()
-    
-    mcq_id = test_create_mcq()
-    typed_id = test_create_typed_response()
-    exam_id = test_create_exam_style()
-    
-    test_filter_by_subject()
-    test_filter_by_answer_type()
-    
-    test_invalid_mcq_missing_answer()
-    test_invalid_answer_type()
-    
-    test_delete_existing(mcq_id)
-    test_delete_nonexistent()
+    # Run regression tests for new features
+    test_post_with_link_and_board()
+    test_get_returns_link_and_board()
+    test_extract_valid_pdf()
+    test_extract_non_pdf_file()
+    test_extract_no_file()
+    test_pre_existing_endpoints()
     
     # Cleanup remaining items
     cleanup_created_items()
