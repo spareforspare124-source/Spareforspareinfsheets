@@ -20,6 +20,8 @@ from dotenv import load_dotenv
 from fastapi import APIRouter, File, HTTPException, Query, Request, Response, UploadFile, status
 from pydantic import BaseModel, ConfigDict, Field
 
+from .topics import normalize_topic
+
 load_dotenv()
 
 
@@ -44,6 +46,7 @@ class PastPaperIn(BaseModel):
     board: Optional[str] = None
     marks: Optional[int] = None
     link: Optional[str] = None  # optional URL reference (source paper, syllabus, video, etc.)
+    addedBy: Optional[str] = None  # admin account identifier ("demo", email, etc.)
     # MCQ
     options: Optional[List[str]] = None
     a: Optional[int] = None
@@ -102,6 +105,8 @@ async def list_past_papers(
     subject: Optional[str] = Query(None),
     topic: Optional[str] = Query(None),
     answerType: Optional[str] = Query(None),
+    board: Optional[str] = Query(None),
+    addedBy: Optional[str] = Query(None),
     limit: int = Query(500, ge=1, le=2000),
 ) -> List[Dict[str, Any]]:
     query: Dict[str, Any] = {}
@@ -111,6 +116,10 @@ async def list_past_papers(
         query["topic"] = topic
     if answerType:
         query["answerType"] = answerType
+    if board:
+        query["board"] = board
+    if addedBy:
+        query["addedBy"] = addedBy
     cursor = request.app.state.db.past_papers.find(query, {"_id": 0}).sort("addedAt", -1).limit(limit)
     return [doc async for doc in cursor]
 
@@ -186,6 +195,7 @@ def _sanitize_extracted(raw: Dict[str, Any], defaults: Dict[str, Any]) -> List[D
     items = raw.get("questions") if isinstance(raw, dict) else None
     if not isinstance(items, list):
         raise HTTPException(status_code=502, detail="LLM output missing 'questions' array")
+    subject_default = defaults.get("subject", "") or ""
     out: List[Dict[str, Any]] = []
     for item in items:
         if not isinstance(item, dict):
@@ -195,16 +205,21 @@ def _sanitize_extracted(raw: Dict[str, Any], defaults: Dict[str, Any]) -> List[D
             continue
         answer_type = item.get("answerType") if item.get("answerType") in _ALLOWED_ANSWER_TYPES else "Multiple choice"
         difficulty = item.get("difficulty") if item.get("difficulty") in _ALLOWED_DIFFICULTIES else defaults.get("difficulty", "Medium")
+        subject = subject_default or (item.get("subject") or "")
+        # Snap LLM-proposed topic to the closest canonical topic for the subject.
+        raw_topic = (item.get("topic") or "").strip() or defaults.get("topic")
+        normalized_topic = normalize_topic(subject, raw_topic) or raw_topic or (defaults.get("topic") or "")
         cleaned: Dict[str, Any] = {
             "q": q_text,
             "answerType": answer_type,
             "difficulty": difficulty,
-            "subject": defaults.get("subject", "") or (item.get("subject") or ""),
-            "topic": (item.get("topic") or defaults.get("topic") or "").strip() or defaults.get("topic", ""),
+            "subject": subject,
+            "topic": normalized_topic or "",
             "year": defaults.get("year"),
             "board": defaults.get("board"),
             "marks": item.get("marks") if isinstance(item.get("marks"), int) else None,
             "link": defaults.get("link"),
+            "addedBy": defaults.get("addedBy"),
         }
         if answer_type == "Multiple choice":
             opts = item.get("options") or []
@@ -225,6 +240,7 @@ def _sanitize_extracted(raw: Dict[str, Any], defaults: Dict[str, Any]) -> List[D
 
 @router.post("/extract")
 async def extract_past_papers_from_pdf(
+    request: Request,
     file: UploadFile = File(...),
     subject: str = Query(""),
     topic: str = Query(""),
@@ -232,10 +248,12 @@ async def extract_past_papers_from_pdf(
     board: Optional[str] = Query(None),
     difficulty: str = Query("Medium"),
     link: Optional[str] = Query(None),
+    addedBy: Optional[str] = Query(None),
+    autosave: bool = Query(False),
 ) -> Dict[str, Any]:
     """Accept a PDF past paper, run it through an LLM, and return a list of
-    extracted question dicts. The caller (admin UI) can then review each one
-    and POST them individually to /api/past-papers to save.
+    extracted question dicts. When `autosave=true`, the extracted questions are
+    also persisted to the database immediately (skipping the admin review step).
     """
     if not file.filename or not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=422, detail="Only PDF uploads are supported")
@@ -284,9 +302,33 @@ async def extract_past_papers_from_pdf(
             "board": board,
             "difficulty": difficulty if difficulty in _ALLOWED_DIFFICULTIES else "Medium",
             "link": link,
+            "addedBy": addedBy or "demo",
         }
         questions = _sanitize_extracted(parsed, defaults)
-        return {"questions": questions, "count": len(questions)}
+
+        saved: List[Dict[str, Any]] = []
+        if autosave and questions:
+            db = request.app.state.db
+            for q in questions:
+                # Skip drafts that clearly won't pass MCQ/typed/exam requirements.
+                if q["answerType"] == "Multiple choice" and (not q.get("options") or not any((o or "").strip() for o in q["options"])):
+                    continue
+                if q["answerType"] == "Typed response" and not q.get("typedAnswer"):
+                    continue
+                if q["answerType"] == "Exam style" and not q.get("examAnswer"):
+                    # Backfill examAnswer with the question text so the admin still has something to edit.
+                    q["examAnswer"] = q.get("examAnswer") or q["q"]
+                doc = PastPaper(**q).model_dump()
+                await db.past_papers.insert_one({**doc, "_id": doc["id"]})
+                saved.append(doc)
+
+        return {
+            "questions": questions,
+            "count": len(questions),
+            "saved": saved,
+            "savedCount": len(saved),
+            "autosaved": bool(autosave),
+        }
     finally:
         try:
             os.unlink(tmp_path)

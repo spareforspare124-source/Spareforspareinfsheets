@@ -124,7 +124,12 @@ export default function Worksheets({ go }) {
   const { state, recordWorksheet } = useApp();
   const track = state.user?.examTrack || 'SSLC';
   const examMinutes = EXAM_DURATIONS[track] || 60;
-  const pastPaperPool = state.pastPapers || [];
+
+  // Only past-paper questions from the learner's own exam-track. Uploads
+  // without a board attached remain visible to everyone.
+  const pastPaperPool = useMemo(() => {
+    return (state.pastPapers || []).filter((p) => !p.board || p.board === track);
+  }, [state.pastPapers, track]);
 
   // Only subjects the user has actually chosen (from onboarding / courses)
   const allTrackSubjects = SUBJECTS[track] || [];

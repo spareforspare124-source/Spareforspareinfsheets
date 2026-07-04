@@ -119,6 +119,8 @@ export default function AdminPlaceholder() {
 // --------------------------------------------------------------------------
 
 function CategoryPanel({ syllabus, subject, pastPapers, addPastPaper, removePastPaper }) {
+  const { state } = useApp();
+  const addedBy = state.user?.email || (state.user?.isDemo ? 'demo' : 'unknown');
   const [form, setForm] = useState(() => emptyForm({ syllabus, subject }));
   const [filterTopic, setFilterTopic] = useState('');
   const [busy, setBusy] = useState(false);
@@ -163,6 +165,7 @@ function CategoryPanel({ syllabus, subject, pastPapers, addPastPaper, removePast
       answerType: form.answerType,
       marks: form.marks ? parseInt(form.marks, 10) : null,
       link: form.link.trim() || null,
+      addedBy,
       q: form.q.trim(),
       source: 'past-paper',
     };
@@ -387,9 +390,12 @@ function LibraryRow({ p, onRemove }) {
 // --------------------------------------------------------------------------
 
 function BulkPdfUpload({ syllabus, subject, addPastPaper }) {
+  const { state, refreshPastPapers } = useApp();
+  const addedBy = state.user?.email || (state.user?.isDemo ? 'demo' : 'unknown');
   const [file, setFile] = useState(null);
   const [year, setYear] = useState('');
   const [link, setLink] = useState('');
+  const [autosave, setAutosave] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [extracted, setExtracted] = useState([]); // list of question drafts
   const [savingAll, setSavingAll] = useState(false);
@@ -400,9 +406,10 @@ function BulkPdfUpload({ syllabus, subject, addPastPaper }) {
     if (!file) { toast.error('Choose a PDF first'); return; }
     setUploading(true);
     try {
-      const params = new URLSearchParams({ subject, board: syllabus, difficulty: 'Medium' });
+      const params = new URLSearchParams({ subject, board: syllabus, difficulty: 'Medium', addedBy });
       if (year) params.set('year', year);
       if (link) params.set('link', link);
+      if (autosave) params.set('autosave', 'true');
       const fd = new FormData();
       fd.append('file', file);
       const res = await fetch(`${API_BASE}/api/past-papers/extract?${params.toString()}`, { method: 'POST', body: fd });
@@ -410,9 +417,17 @@ function BulkPdfUpload({ syllabus, subject, addPastPaper }) {
       if (!res.ok) {
         throw new Error(body?.detail || `Extract failed (${res.status})`);
       }
-      const list = (body.questions || []).map((q, i) => ({ ...q, _draftId: `d_${Date.now()}_${i}` }));
-      setExtracted(list);
-      toast.success(`Extracted ${list.length} question${list.length === 1 ? '' : 's'}`);
+      if (body.autosaved) {
+        const savedCount = body.savedCount || 0;
+        toast.success(`Extracted ${body.count} · saved ${savedCount} directly to the library`);
+        setExtracted([]);
+        // Refresh the shared library so the newly-saved questions show up.
+        if (refreshPastPapers) await refreshPastPapers();
+      } else {
+        const list = (body.questions || []).map((q, i) => ({ ...q, _draftId: `d_${Date.now()}_${i}` }));
+        setExtracted(list);
+        toast.success(`Extracted ${list.length} question${list.length === 1 ? '' : 's'}`);
+      }
     } catch (e) {
       toast.error(e?.message || 'Extraction failed');
     } finally {
@@ -430,6 +445,7 @@ function BulkPdfUpload({ syllabus, subject, addPastPaper }) {
     for (const draft of extracted) {
       // Strip internal fields.
       const { _draftId, ...payload } = draft;
+      payload.addedBy = payload.addedBy || addedBy;
       // Ensure required fields per answer type.
       if (payload.answerType === 'Multiple choice' && (!payload.options || !payload.options.length)) continue;
       if (payload.answerType === 'Typed response' && !payload.typedAnswer) continue;
@@ -471,6 +487,21 @@ function BulkPdfUpload({ syllabus, subject, addPastPaper }) {
         </Field>
       </div>
 
+      <div className="flex flex-wrap items-center gap-3 mb-3">
+        <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+          <span
+            className={`w-9 h-5 rounded-full transition-colors relative ${autosave ? 'bg-blue-600' : 'bg-slate-300'}`}
+            onClick={(e) => { e.preventDefault(); setAutosave(!autosave); }}
+            role="button"
+            aria-pressed={autosave}
+          >
+            <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${autosave ? 'left-4' : 'left-0.5'}`} />
+          </span>
+          <input type="checkbox" checked={autosave} onChange={(e) => setAutosave(e.target.checked)} className="sr-only" data-testid="admin-autosave" />
+          <span className="text-[12.5px] font-medium text-slate-700">Save automatically <span className="text-slate-500 font-normal">(skip the review step)</span></span>
+        </label>
+      </div>
+
       <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={extract}
@@ -479,7 +510,7 @@ function BulkPdfUpload({ syllabus, subject, addPastPaper }) {
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13.5px] font-semibold text-white bg-blue-600 hover:opacity-95 disabled:opacity-50"
         >
           {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          {uploading ? 'Extracting\u2026' : 'Extract questions'}
+          {uploading ? (autosave ? 'Extracting & saving\u2026' : 'Extracting\u2026') : (autosave ? 'Extract & save all' : 'Extract questions')}
         </button>
         {(file || extracted.length > 0) && (
           <button onClick={clear} className="inline-flex items-center gap-1 text-[12.5px] font-medium text-slate-500 hover:text-slate-800">
