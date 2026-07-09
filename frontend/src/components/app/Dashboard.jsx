@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
-import { CalendarClock } from 'lucide-react';
+import { CalendarClock, Sparkles } from 'lucide-react';
+import { useStrengthsWeaknesses, useSavedSwOverrides } from '../../hooks/useStrengthsWeaknesses';
 
 function Ring({ value = 0 }) {
   const r = 32;
@@ -53,19 +54,19 @@ export default function Dashboard({ go }) {
     return { total, correct, sheets, readiness };
   }, [ws]);
 
-  const { topics } = useMemo(() => {
-    const t = {};
-    ws.forEach((w) => {
-      const k = w.topic;
-      if (!t[k]) t[k] = { correct: 0, total: 0 };
-      t[k].correct += w.correct;
-      t[k].total += w.total;
-    });
-    return { topics: t };
-  }, [ws]);
+  // Adaptive strengths/weaknesses shared with the Strengths page. Respects any
+  // user-customized thresholds (persisted in localStorage).
+  const swOverrides = useSavedSwOverrides();
+  const {
+    strengthMin,
+    weaknessMax,
+    isCustom: swIsCustom,
+    strengths: swStrengths,
+    weaknesses: swWeaknesses,
+  } = useStrengthsWeaknesses(ws, swOverrides);
 
-  const strongTopics = useMemo(() => Object.entries(topics).map(([k, v]) => ({ k, acc: v.total ? v.correct / v.total : 0 })).filter((e) => e.acc >= 0.7).slice(0, 3), [topics]);
-  const weakTopics = useMemo(() => Object.entries(topics).map(([k, v]) => ({ k, acc: v.total ? v.correct / v.total : 0 })).filter((e) => e.acc < 0.7).slice(0, 3), [topics]);
+  const strongTopics = useMemo(() => swStrengths.slice(0, 3), [swStrengths]);
+  const weakTopics = useMemo(() => swWeaknesses.slice(0, 3), [swWeaknesses]);
 
   const goalDate = new Date().toDateString();
   const questionsToday = state.goalDate === goalDate ? state.questionsToday : 0;
@@ -144,26 +145,52 @@ export default function Dashboard({ go }) {
 
       <div className="grid lg:grid-cols-2 gap-4">
         <div className="rounded-xl border border-zinc-200 p-5">
-          <div className="eyebrow-muted mb-3">Strong topics</div>
+          <div className="flex items-center justify-between mb-3">
+            <div className="eyebrow-muted">Strong topics</div>
+            <div className="text-[11px] text-slate-500 inline-flex items-center gap-1">
+              {swIsCustom
+                ? <span className="px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 font-medium">Custom</span>
+                : <><Sparkles className="w-3 h-3 text-slate-400" />Adaptive</>}
+              <span className="tabular-nums">≥ {strengthMin}%</span>
+            </div>
+          </div>
           {strongTopics.length === 0 ? (
             <div className="text-[14px] text-zinc-500">Complete a worksheet to start measuring strengths.</div>
           ) : (
             <div className="flex flex-wrap gap-2">
               {strongTopics.map((t) => (
-                <span key={t.k} className="px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 text-[12.5px] font-medium">{t.k} · {Math.round(t.acc * 100)}%</span>
+                <span key={t.topic} className="px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 text-[12.5px] font-medium">{t.topic} · {t.acc}%</span>
               ))}
+              {swStrengths.length > 3 && (
+                <button onClick={() => go('strengths')} className="px-2.5 py-1 rounded-md bg-slate-50 text-slate-600 text-[12.5px] font-medium hover:bg-slate-100 transition">
+                  +{swStrengths.length - 3} more
+                </button>
+              )}
             </div>
           )}
         </div>
         <div className="rounded-xl border border-zinc-200 p-5">
-          <div className="eyebrow-muted mb-3">Weak topics</div>
+          <div className="flex items-center justify-between mb-3">
+            <div className="eyebrow-muted">Weak topics</div>
+            <div className="text-[11px] text-slate-500 inline-flex items-center gap-1">
+              {swIsCustom
+                ? <span className="px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 font-medium">Custom</span>
+                : <><Sparkles className="w-3 h-3 text-slate-400" />Adaptive</>}
+              <span className="tabular-nums">&lt; {weaknessMax}%</span>
+            </div>
+          </div>
           {weakTopics.length === 0 ? (
             <div className="text-[14px] text-zinc-500">Missed questions will appear here.</div>
           ) : (
             <div className="flex flex-wrap gap-2">
               {weakTopics.map((t) => (
-                <span key={t.k} className="px-2.5 py-1 rounded-md bg-zinc-100 text-zinc-700 text-[12.5px] font-medium">{t.k} · {Math.round(t.acc * 100)}%</span>
+                <span key={t.topic} className="px-2.5 py-1 rounded-md bg-rose-50 text-rose-700 text-[12.5px] font-medium">{t.topic} · {t.acc}%</span>
               ))}
+              {swWeaknesses.length > 3 && (
+                <button onClick={() => go('strengths')} className="px-2.5 py-1 rounded-md bg-slate-50 text-slate-600 text-[12.5px] font-medium hover:bg-slate-100 transition">
+                  +{swWeaknesses.length - 3} more
+                </button>
+              )}
             </div>
           )}
         </div>

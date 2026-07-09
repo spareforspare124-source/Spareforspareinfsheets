@@ -1,60 +1,71 @@
-import React, { useMemo, useState } from 'react';
-import { Filter } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Filter, SlidersHorizontal, RotateCcw, Sparkles } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import EmptyStateScene from '../decor/EmptyStateScene';
+import { useStrengthsWeaknesses } from '../../hooks/useStrengthsWeaknesses';
 
-// Clamp helper
-const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+const PREFS_KEY = 'infinitysheets_sw_prefs_v1';
 
-/**
- * Compute adaptive Strength / Weakness thresholds based on the student's own
- * weighted-average accuracy across all completed topics.
- *
- *   strengthMin  = round(avg + 10), clamped to [60, 90]
- *   weaknessMax  = round(avg - 10), clamped to [20, 55]
- *
- * A minimum 10-pt gap between the two is enforced so the buckets never overlap.
- */
-function useAdaptiveThresholds(byTopic) {
-  return useMemo(() => {
-    const totalCorrect = byTopic.reduce((s, t) => s + t.correct, 0);
-    const totalQ = byTopic.reduce((s, t) => s + t.total, 0);
-    const avg = totalQ ? Math.round((totalCorrect / totalQ) * 100) : 0;
-
-    let strengthMin = clamp(Math.round(avg + 10), 60, 90);
-    let weaknessMax = clamp(Math.round(avg - 10), 20, 55);
-    if (weaknessMax >= strengthMin - 10) weaknessMax = strengthMin - 10;
-
-    return { avg, strengthMin, weaknessMax };
-  }, [byTopic]);
+function loadPrefs() {
+  try {
+    const raw = localStorage.getItem(PREFS_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw);
+    return {
+      level: ['all', 'strengths', 'weaknesses'].includes(p.level) ? p.level : 'all',
+      subject: typeof p.subject === 'string' ? p.subject : 'all',
+      overrides: p.overrides && typeof p.overrides === 'object' ? {
+        strengthMin: p.overrides.strengthMin != null ? Number(p.overrides.strengthMin) : null,
+        weaknessMax: p.overrides.weaknessMax != null ? Number(p.overrides.weaknessMax) : null,
+      } : null,
+      customizeOpen: !!p.customizeOpen,
+    };
+  } catch (_e) {
+    return null;
+  }
+}
+function savePrefs(prefs) {
+  try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch (_e) { /* ignore */ }
 }
 
 export default function Strengths() {
   const { state } = useApp();
   const ws = state.worksheets || [];
-  const [level, setLevel] = useState('all'); // 'all' | 'strengths' | 'weaknesses'
-  const [subject, setSubject] = useState('all');
 
-  const byTopic = useMemo(() => {
-    const t = {};
-    ws.forEach((w) => {
-      if (!t[w.topic]) t[w.topic] = { correct: 0, total: 0, subject: w.subject };
-      t[w.topic].correct += w.correct;
-      t[w.topic].total += w.total;
-    });
-    return Object.entries(t)
-      .map(([k, v]) => ({ topic: k, ...v, acc: v.total ? Math.round((v.correct / v.total) * 100) : 0 }))
-      .sort((a, b) => b.acc - a.acc);
-  }, [ws]);
+  // Hydrate persisted UI prefs on mount
+  const initial = useMemo(() => loadPrefs() || {}, []);
+  const [level, setLevel] = useState(initial.level || 'all');
+  const [subject, setSubject] = useState(initial.subject || 'all');
+  const [overrides, setOverrides] = useState(initial.overrides || null);
+  const [customizeOpen, setCustomizeOpen] = useState(!!initial.customizeOpen);
 
-  const { avg, strengthMin, weaknessMax } = useAdaptiveThresholds(byTopic);
+  // Persist whenever anything changes
+  useEffect(() => {
+    savePrefs({ level, subject, overrides, customizeOpen });
+  }, [level, subject, overrides, customizeOpen]);
 
+  const {
+    byTopic,
+    avg,
+    adaptiveStrengthMin,
+    adaptiveWeaknessMax,
+    strengthMin,
+    weaknessMax,
+    isCustom,
+  } = useStrengthsWeaknesses(ws, overrides);
+
+  // If subject filter references a subject that no longer exists (e.g., after
+  // reset demo), silently fall back to "all".
   const subjects = useMemo(() => {
     const set = new Set(byTopic.map((t) => t.subject).filter(Boolean));
     return Array.from(set).sort();
   }, [byTopic]);
+  useEffect(() => {
+    if (subject !== 'all' && subjects.length > 0 && !subjects.includes(subject)) {
+      setSubject('all');
+    }
+  }, [subject, subjects]);
 
-  // Apply subject filter first, then compute counts against subject-scoped list
   const subjectScoped = useMemo(
     () => (subject === 'all' ? byTopic : byTopic.filter((t) => t.subject === subject)),
     [byTopic, subject]
@@ -92,6 +103,25 @@ export default function Strengths() {
     { key: 'strengths', label: 'Strengths', count: strengthCount },
     { key: 'weaknesses', label: 'Weaknesses', count: weaknessCount },
   ];
+
+  // Handlers for the override inputs
+  const setStrengthMin = (n) => {
+    const v = Number(n);
+    if (Number.isNaN(v)) return;
+    setOverrides((prev) => ({
+      strengthMin: v,
+      weaknessMax: prev?.weaknessMax != null ? prev.weaknessMax : adaptiveWeaknessMax,
+    }));
+  };
+  const setWeaknessMax = (n) => {
+    const v = Number(n);
+    if (Number.isNaN(v)) return;
+    setOverrides((prev) => ({
+      strengthMin: prev?.strengthMin != null ? prev.strengthMin : adaptiveStrengthMin,
+      weaknessMax: v,
+    }));
+  };
+  const resetThresholds = () => setOverrides(null);
 
   return (
     <div className="flex flex-col gap-4">
@@ -136,8 +166,8 @@ export default function Strengths() {
           </div>
         </div>
 
-        {/* Adaptive threshold info */}
-        <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-slate-500">
+        {/* Adaptive threshold info + customize toggle */}
+        <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11.5px] text-slate-500">
           <span className="inline-flex items-center gap-1.5">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-500" />
             Strength ≥ <span className="tabular-nums font-medium text-slate-700">{strengthMin}%</span>
@@ -147,9 +177,66 @@ export default function Strengths() {
             Weakness &lt; <span className="tabular-nums font-medium text-slate-700">{weaknessMax}%</span>
           </span>
           <span className="text-slate-400">
-            Adapts to your <span className="tabular-nums font-medium text-slate-600">{avg}%</span> average
+            {isCustom ? (
+              <span className="inline-flex items-center gap-1">
+                <span className="px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 text-[10.5px] font-medium">Custom</span>
+                <span>overrides your <span className="tabular-nums font-medium text-slate-600">{avg}%</span> average</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-slate-400" />
+                Adapts to your <span className="tabular-nums font-medium text-slate-600">{avg}%</span> average
+              </span>
+            )}
           </span>
+          <button
+            type="button"
+            onClick={() => setCustomizeOpen((v) => !v)}
+            className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-[color:var(--color-border)] bg-white px-2 py-1 text-[11.5px] font-medium text-slate-700 hover:border-slate-300 transition"
+            aria-expanded={customizeOpen}
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            {customizeOpen ? 'Hide' : 'Customize'}
+          </button>
         </div>
+
+        {/* Customize panel */}
+        {customizeOpen && (
+          <div className="mt-3 rounded-lg border border-[color:var(--color-border)] bg-slate-50/60 p-3">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+              <ThresholdInput
+                label="Strength ≥"
+                dot="bg-blue-500"
+                value={strengthMin}
+                onChange={setStrengthMin}
+                min={weaknessMax + 5}
+                max={100}
+                hint={`adaptive ${adaptiveStrengthMin}%`}
+              />
+              <ThresholdInput
+                label="Weakness <"
+                dot="bg-rose-400"
+                value={weaknessMax}
+                onChange={setWeaknessMax}
+                min={0}
+                max={Math.max(0, strengthMin - 5)}
+                hint={`adaptive ${adaptiveWeaknessMax}%`}
+              />
+              <button
+                type="button"
+                onClick={resetThresholds}
+                disabled={!isCustom}
+                className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-[color:var(--color-border)] bg-white px-2.5 py-1.5 text-[12px] font-medium text-slate-700 hover:border-slate-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                title="Return to adaptive defaults"
+              >
+                <RotateCcw className="w-3.5 h-3.5" /> Reset to defaults
+              </button>
+            </div>
+            <div className="mt-2 text-[11px] text-slate-500">
+              Adaptive defaults are calculated from your weighted-average accuracy. Custom values are saved on this device.
+            </div>
+          </div>
+        )}
       </div>
 
       {/* List */}
@@ -182,5 +269,42 @@ export default function Strengths() {
         </div>
       )}
     </div>
+  );
+}
+
+function ThresholdInput({ label, dot, value, onChange, min, max, hint }) {
+  return (
+    <label className="inline-flex items-center gap-2 text-[12px] text-slate-700">
+      <span className="inline-flex items-center gap-1.5">
+        <span className={`inline-block h-1.5 w-1.5 rounded-full ${dot}`} />
+        {label}
+      </span>
+      <div className="inline-flex items-center rounded-md border border-[color:var(--color-border)] bg-white overflow-hidden">
+        <button
+          type="button"
+          className="px-2 py-1 text-slate-500 hover:bg-slate-50 disabled:opacity-40"
+          onClick={() => onChange(Math.max(min, value - 5))}
+          disabled={value <= min}
+          aria-label={`Decrease ${label}`}
+        >−</button>
+        <input
+          type="number"
+          value={value}
+          min={min}
+          max={max}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-14 py-1 text-center tabular-nums font-medium text-slate-800 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        />
+        <span className="pr-2 text-slate-500">%</span>
+        <button
+          type="button"
+          className="px-2 py-1 text-slate-500 hover:bg-slate-50 disabled:opacity-40"
+          onClick={() => onChange(Math.min(max, value + 5))}
+          disabled={value >= max}
+          aria-label={`Increase ${label}`}
+        >+</button>
+      </div>
+      {hint && <span className="text-[10.5px] text-slate-400">{hint}</span>}
+    </label>
   );
 }
