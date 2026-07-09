@@ -125,9 +125,14 @@ html, body {
 }
 
 .section-dark {
-    background: #0f172a;
-    color: #f8fafc;
+    background: var(--color-bg);
+    color: var(--color-text);
 }
+
+/* Theme-aware dashboard screenshots in Hero */
+.shot-dark { display: none; }
+html.dark .shot-light { display: none; }
+html.dark .shot-dark { display: block; }
 
 .text-muted-2 { color: var(--color-text-2); }
 .text-dark-slate { color: var(--color-text); }

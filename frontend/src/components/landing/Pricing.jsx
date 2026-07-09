@@ -31,21 +31,21 @@ export default function Pricing() {
             </div>
           </Reveal>
           <Reveal delay={0.15}>
-            <div className="rounded-3xl p-8 bg-slate-900 text-white border border-slate-800 shadow-2xl shadow-slate-900/20">
-              <div className="text-[11px] tracking-[0.14em] uppercase font-semibold text-blue-300">Everything, free</div>
+            <div className="rounded-3xl p-8 bg-white text-slate-900 border border-slate-200 shadow-xl shadow-slate-900/5">
+              <div className="text-[11px] tracking-[0.14em] uppercase font-semibold text-blue-700">Everything, free</div>
               <div className="flex items-baseline gap-2 mt-3">
-                <div className="text-[48px] font-semibold tracking-tight text-white">$0</div>
-                <div className="text-[14px] text-slate-400">forever</div>
+                <div className="text-[48px] font-semibold tracking-tight text-slate-900">$0</div>
+                <div className="text-[14px] text-slate-500">forever</div>
               </div>
               <ul className="mt-6 flex flex-col gap-3">
                 {FEATURES.map((f) => (
                   <li key={f} className="flex items-start gap-2.5">
-                    <Check className="w-4 h-4 mt-0.5 text-emerald-400" strokeWidth={2.6} />
-                    <span className="text-[14.5px] text-slate-200">{f}</span>
+                    <Check className="w-4 h-4 mt-0.5 text-emerald-600" strokeWidth={2.6} />
+                    <span className="text-[14.5px] text-slate-700">{f}</span>
                   </li>
                 ))}
               </ul>
-              <a href="#signup" className="mt-8 inline-flex items-center justify-center gap-2 w-full py-3 rounded-lg text-[15px] font-medium bg-blue-500 hover:bg-blue-400 text-white transition-colors">
+              <a href="#signup" className="mt-8 inline-flex items-center justify-center gap-2 w-full py-3 rounded-lg text-[15px] font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors">
                 Make the change <ArrowRight className="w-4 h-4" />
               </a>
               <p className="mt-4 text-[12px] text-slate-500 text-center">Supported by ads, so it stays free for everyone.</p>
