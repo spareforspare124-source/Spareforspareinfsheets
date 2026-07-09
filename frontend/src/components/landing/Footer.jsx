@@ -9,7 +9,10 @@ export default function Footer() {
           <Infinity className="w-4 h-4 text-blue-600" strokeWidth={2.4} />
           <span className="text-[13.5px] font-semibold text-zinc-900">InfinitySheets</span>
         </div>
-        <a href="#signup" className="text-[13.5px] text-zinc-600 hover:text-zinc-900 transition-colors">Start free</a>
+        <div className="flex items-center gap-6">
+          <a href="#resources" className="text-[13.5px] text-zinc-600 hover:text-zinc-900 transition-colors">Free resources</a>
+          <a href="#signup" className="text-[13.5px] text-zinc-600 hover:text-zinc-900 transition-colors">Start free</a>
+        </div>
       </div>
     </footer>
   );

@@ -10,6 +10,7 @@ export const EXAM_TRACKS = [
   { id: 'SAT', name: 'SAT', title: 'Timed reasoning practice', desc: 'Reading, writing, and math sets with pacing-focused feedback.' },
   { id: 'JEE', name: 'JEE', title: 'Concept-heavy problem solving', desc: 'Physics, chemistry, and maths sheets built around difficult multi-step questions.' },
   { id: 'NEET', name: 'NEET', title: 'High-volume recall and accuracy', desc: 'Biology-heavy revision plus chemistry and physics practice.' },
+  { id: 'LSAT', name: 'LSAT', title: 'Logic under time pressure', desc: 'Logical reasoning and reading comprehension drills with pacing-focused feedback.' },
 ];
 
 // Default duration (in minutes) of the actual exam for each track. Used as the
@@ -24,48 +25,45 @@ export const EXAM_DURATIONS = {
   SAT: 134,
   JEE: 180,
   NEET: 200,
+  LSAT: 140,
 };
 
 export const FEATURES = [
-  { title: 'Progress Tracking', desc: 'Visual dashboards that show mastery, readiness, completed worksheets, and study streaks.', icon: 'LineChart', tone: 'primary' },
-  { title: 'AI Weakness Analysis', desc: 'Automatically discover which concepts need the most attention.', icon: 'Brain', tone: 'secondary' },
+  { title: 'Weakness Analysis', desc: 'Every answer sharpens the picture of which concepts need attention—no self-diagnosis required.', icon: 'Brain', tone: 'secondary' },
   { title: 'Targeted Worksheets', desc: 'Practice exactly what you need, instead of repeating what you already know.', icon: 'Target', tone: 'accent' },
-  { title: 'Smart Recommendations', desc: 'Receive personalized study plans based on your performance.', icon: 'Lightbulb', tone: 'success' },
-  { title: 'Multiple Curricula', desc: 'Built for IGCSE, IB, AP, SAT, and more.', icon: 'BookOpen', tone: 'primary' },
+  { title: 'Scores & Predicted Grades', desc: 'An accurate score after every session, plus a predicted grade—especially handy for IGCSE and IB, where predictions shape university applications.', icon: 'LineChart', tone: 'primary' },
+  { title: 'Custom Feedback & Advice', desc: 'Personalized feedback on every worksheet and clear advice on what to do next—like a tutor reviewing every session.', icon: 'Lightbulb', tone: 'success' },
+  { title: 'A Huge Question Bank', desc: 'SSLC, CBSE, ICSE, IGCSE, A Levels, IB, SAT, JEE, NEET and more—including exams with barely any practice-paper support.', icon: 'BookOpen', tone: 'primary' },
+  { title: 'Fresh Questions, Free', desc: 'AI does one job here: generating new exam-style questions. For courses like IB or CLAT, where practice material sits behind paywalls, you get an endless supply at no cost.', icon: 'Brain', tone: 'secondary' },
 ];
 
 export const HOW_IT_WORKS = [
-  { n: '01', title: 'Complete a Worksheet', text: 'Answer AI-generated questions tailored to your syllabus and current ability.' },
-  { n: '02', title: 'AI Weakness Analysis', text: 'Our AI identifies the exact topics and skills you need to improve.' },
-  { n: '03', title: 'Targeted Worksheets', text: 'Receive new worksheets focused specifically on your weak areas.' },
-  { n: '04', title: 'Smart Recommendations', text: 'Know exactly what to study next with personalized revision suggestions.' },
-  { n: '05', title: 'Track Your Progress', text: 'Monitor topic mastery, readiness scores, study streaks, and long-term improvement.' },
+  { n: '01', title: 'Complete a Worksheet', text: 'Answer fresh exam-style questions matched to your syllabus and current level.' },
+  { n: '02', title: 'Weakness Analysis', text: 'The platform pinpoints the exact topics and question types costing you marks.' },
+  { n: '03', title: 'Targeted Worksheets', text: 'Your next sheet adapts: more, easier problems on your weak points to build them up, and fewer, harder problems on your strong points to keep them sharp.' },
+  { n: '04', title: 'Smart Recommendations', text: 'Know exactly what to study next—no planning, no hunting for material.' },
+  { n: '05', title: 'Track Your Progress', text: 'Watch topic mastery, predicted scores, and study streaks improve over time.' },
 ];
 
 export const WHY_IT_WORKS = [
-  'Personalized AI-generated worksheets',
-  'Active recall-based learning',
-  'Adaptive revision paths',
-  'Real-time progress tracking',
-  'Instant feedback',
-  'Built around how students actually learn',
+  'Active recall—practice beats rereading',
+  'Fresh exam-style questions generated for you',
+  'Targets your weak concepts automatically',
+  'Accurate scores and predicted grades',
+  'Instant, personalized feedback',
+  'Completely free—no paywalled practice material',
 ];
 
 export const RESEARCH_STATS = [
-  { num: '2\u00d7', title: 'More effective than passive rereading', desc: 'Retrieval practice consistently outperforms rereading in long-term retention studies.' },
-  { num: '89%', title: 'Better long-term retention', desc: 'Students report stronger recall when using active recall techniques over time.' },
-  { num: 'Personalized', title: 'Higher engagement & outcomes', desc: 'Adaptive learning leads to improved results compared to one-size-fits-all instruction.' },
+  { num: '2\u00d7', title: 'The testing effect', desc: 'Roediger & Karpicke (2006): practicing retrieval roughly doubled long-term retention compared to repeated rereading.' },
+  { num: '#1', title: 'Top-rated study technique', desc: 'Dunlosky et al. (2013) reviewed ten popular study techniques and rated practice testing among the most effective of all.' },
+  { num: 'Targeted', title: 'Feedback accelerates learning', desc: 'Decades of research show that immediate, specific feedback\u2014exactly what every worksheet gives you\u2014speeds up improvement.' },
 ];
 
 export const TESTIMONIALS = [
   { quote: 'I finally knew exactly what to study instead of wasting time guessing.', name: 'High school senior', role: 'IB student' },
   { quote: 'The targeted worksheets helped me improve the topics I struggled with the most.', name: 'IGCSE learner', role: 'Year 11' },
   { quote: 'It is like having a personal tutor that understands how I learn.', name: 'SAT prep student', role: 'Grade 12' },
-];
-
-export const PRICING = [
-  { tag: 'Free', price: '$0', period: 'forever', features: ['Personalized worksheets', 'AI weakness analysis', 'Progress tracking'], cta: 'Start Free', highlight: false },
-  { tag: 'Premium', price: '$9', period: 'per month', features: ['Unlimited worksheets', 'Advanced analytics', 'Smart recommendations', 'Priority AI generation', 'Early access to new features'], cta: 'Upgrade', highlight: true },
 ];
 
 // Subjects per exam track
@@ -79,6 +77,7 @@ export const SUBJECTS = {
   SAT: ['Math', 'Reading', 'Writing'],
   JEE: ['Physics', 'Chemistry', 'Mathematics'],
   NEET: ['Biology', 'Chemistry', 'Physics'],
+  LSAT: ['Logical Reasoning', 'Reading Comprehension'],
 };
 
 export const TOPICS = {
@@ -96,6 +95,8 @@ export const TOPICS = {
   Economics: ['Microeconomics', 'Macroeconomics', 'International Trade'],
   Reading: ['Passages', 'Vocabulary in Context'],
   Writing: ['Grammar', 'Rhetoric'],
+  'Logical Reasoning': ['Assumptions', 'Strengthen & Weaken', 'Flaws', 'Inference', 'Parallel Reasoning'],
+  'Reading Comprehension': ['Main Point', 'Author Attitude', 'Comparative Passages', 'Detail & Structure'],
 };
 
 // Brief summary of what each topic covers — used on the Course Overview page.

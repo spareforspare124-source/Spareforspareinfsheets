@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
 import Navbar from './Navbar';
 import Hero from './Hero';
-import WhyInfinity from './WhyInfinity';
+import WhyDifferent from './WhyDifferent';
 import HowItWorks from './HowItWorks';
 import Features from './Features';
-import WhatIs from './WhatIs';
-import WhyItWorks from './WhyItWorks';
+import TryQuestion from './TryQuestion';
+import PredictedGrade from './PredictedGrade';
+import FreeResources from './FreeResources';
 import Research from './Research';
-import Testimonials from './Testimonials';
+import FAQ from './FAQ';
 import Pricing from './Pricing';
 import FinalCTA from './FinalCTA';
 import SignupSection from './SignupSection';
@@ -30,13 +31,14 @@ export default function LandingPage({ hash }) {
     <div className="section-bg">
       <Navbar onStart={onStart} />
       <Hero />
-      <WhyInfinity />
+      <WhyDifferent />
       <HowItWorks />
       <Features />
-      <WhatIs />
-      <WhyItWorks />
+      <TryQuestion />
+      <PredictedGrade />
+      <FreeResources />
       <Research />
-      <Testimonials />
+      <FAQ />
       <Pricing />
       <FinalCTA />
       <SignupSection />

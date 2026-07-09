@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { Infinity, Menu, X, Eye } from 'lucide-react';
+import { Infinity, Menu, X, Eye, Sun, Moon } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export default function Navbar({ onStart }) {
   const [open, setOpen] = useState(false);
-  const { startDemo } = useApp();
+  const { startDemo, toggleTheme, state } = useApp();
   const tryDemo = () => { startDemo(); window.location.hash = '#dashboard'; };
   const links = [
     { label: 'Features', href: '#features' },
     { label: 'How It Works', href: '#how' },
-    { label: 'Testimonials', href: '#testimonials' },
+    { label: 'FAQ', href: '#faq' },
+    { label: 'Resources', href: '#resources' },
     { label: 'Pricing', href: '#pricing' },
   ];
   return (
@@ -29,6 +30,13 @@ export default function Navbar({ onStart }) {
           <a href="#signup" className="text-[14px] font-medium text-slate-900">Sign Up</a>
         </nav>
         <div className="flex items-center gap-2">
+          <button
+            onClick={toggleTheme}
+            aria-label={state.theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="w-9 h-9 inline-flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors"
+          >
+            {state.theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
           <button onClick={tryDemo} className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13.5px] font-medium text-violet-700 border border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors">
             <Eye className="w-3.5 h-3.5" /> Try Demo
           </button>

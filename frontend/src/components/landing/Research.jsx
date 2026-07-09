@@ -11,7 +11,7 @@ export default function Research() {
             <BookMarked className="w-4 h-4 text-violet-600" />
             <span className="text-[11px] tracking-[0.14em] uppercase font-semibold text-violet-700">Backed by research</span>
           </div>
-          <h2 className="h-display text-[40px] sm:text-[48px] lg:text-[54px]">Methods that move the needle.</h2>
+          <h2 className="h-display text-[44px] sm:text-[54px] lg:text-[62px]">Methods that move the needle.</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12">
           {RESEARCH_STATS.map((r, i) => (

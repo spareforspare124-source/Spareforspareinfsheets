@@ -10,7 +10,7 @@ export default function FinalCTA() {
             <div className="text-[11px] tracking-[0.14em] uppercase font-semibold text-blue-300 mb-5">Final call</div>
             <h2 className="h-display text-white text-[40px] sm:text-[48px] lg:text-[56px]">Ready to study smarter?</h2>
             <p className="mt-5 text-[16px] text-slate-300 leading-relaxed max-w-[560px]">
-              Join students who are using AI-powered personalized learning to improve faster and study with confidence.
+              Join students replacing blind rereading with targeted, exam-style practice. Free, personalized, and the planning is done for you—every hour you study finally counts.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <a href="#signup" className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-blue-500 hover:bg-blue-400 text-white text-[14.5px] font-medium transition-colors">

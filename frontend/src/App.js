@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './App.css';
 import { AppProvider, useApp } from './context/AppContext';
 import LandingPage from './components/landing/LandingPage';
+import ResourcesPage from './components/landing/ResourcesPage';
 import AppShell from './components/app/AppShell';
 import { Toaster } from './components/ui/sonner';
 
@@ -16,6 +17,11 @@ function Router() {
   }, []);
 
   if (!loaded) return null;
+
+  // Free resource directory — reachable whether signed in or not
+  if (hash.startsWith('#resources')) {
+    return <ResourcesPage />;
+  }
 
   // If user is logged in, show the dashboard app
   if (state.user) {

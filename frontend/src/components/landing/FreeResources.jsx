@@ -1,0 +1,58 @@
+import React from 'react';
+import { ArrowRight, Library } from 'lucide-react';
+import Reveal from './Reveal';
+import { RESOURCE_TRACKS } from '../../data/resources';
+import { DoodleBooks } from '../decor/StudentDoodles';
+
+export default function FreeResources() {
+  return (
+    <section className="section-dark overflow-hidden">
+      <div className="max-w-[1280px] mx-auto px-6 py-28 lg:py-32">
+        <div className="grid lg:grid-cols-[1.15fr_1fr] gap-12 lg:gap-16 items-center">
+          <Reveal>
+            <div>
+              <div className="flex items-center gap-2 mb-5">
+                <Library className="w-4 h-4 text-blue-300" />
+                <span className="text-[11px] tracking-[0.14em] uppercase font-semibold text-blue-300">Free resource directory</span>
+              </div>
+              <h2 className="h-display text-white text-[46px] sm:text-[58px] lg:text-[66px] leading-[1.05]">
+                Every past paper. Every syllabus. One page.
+              </h2>
+              <p className="mt-6 text-[17px] sm:text-[18px] text-slate-300 leading-relaxed max-w-[560px]">
+                We collected the official past papers, syllabi, and best free archives for all
+                {' '}{RESOURCE_TRACKS.length} curricula&mdash;so you never dig through ten tabs again.
+                No account. No catch. Just links to the real sources.
+              </p>
+              <a
+                href="#resources"
+                className="mt-8 inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-blue-500 hover:bg-blue-400 text-white text-[15.5px] font-medium transition-colors"
+              >
+                Browse free resources <ArrowRight className="w-4 h-4" />
+              </a>
+            </div>
+          </Reveal>
+          <Reveal delay={0.15}>
+            <div className="relative">
+              <div className="hidden lg:block absolute -top-24 right-2"><DoodleBooks tone="dark" /></div>
+              <div className="rounded-3xl border border-slate-700 bg-slate-900/50 backdrop-blur p-7">
+                <div className="text-[12px] tracking-wider uppercase font-semibold text-slate-400 mb-4">Covered curricula</div>
+                <div className="flex flex-wrap gap-2.5">
+                  {RESOURCE_TRACKS.map((t) => (
+                    <a
+                      key={t.id}
+                      href="#resources"
+                      className="px-4 py-2 rounded-full border border-slate-600 text-slate-200 text-[14px] hover:border-blue-400 hover:text-white transition-colors"
+                    >
+                      {t.short}
+                    </a>
+                  ))}
+                </div>
+                <p className="mt-5 text-[13px] text-slate-400">Official sources first &middot; updated as boards publish</p>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
