@@ -359,10 +359,20 @@ function SubjectPredictedRow({ s, color, info, p, d, ws, isHovered, dimmed, onHo
   );
 }
 
-function LineChart({ series, subjects, allSubjects, predictedBySubject, hoveredSubject, onHoverSubject, examTrack }) {
+function LineChart({ series, subjects, allSubjects, predictedBySubject, subjectDetails, hoveredSubject, onHoverSubject, onSubjectClick, examTrack }) {
   const w = 780, h = 300, padL = 36, padR = 90, padT = 16, padB = 30; // extra right padding for end-labels
   const innerW = w - padL - padR;
   const innerH = h - padT - padB;
+
+  const containerRef = useRef(null);
+  const [pointHover, setPointHover] = useState(null); // { subject, topic, score, date, difficulty, x, y }
+  const [lineHover, setLineHover] = useState(null);   // { subject, x, y }
+
+  const posFromEvent = (e) => {
+    const rect = containerRef.current ? containerRef.current.getBoundingClientRect() : null;
+    if (!rect) return { x: 0, y: 0 };
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  };
 
   // x range across visible points: 0..maxLen
   const maxLen = Math.max(0, ...subjects.map((s) => (series[s]?.length || 0)));
@@ -380,9 +390,23 @@ function LineChart({ series, subjects, allSubjects, predictedBySubject, hoveredS
   const dimOthers = !!hoveredSubject;
   const opacityFor = (s) => (dimOthers && s !== hoveredSubject) ? 0.15 : 1;
 
+  const clearAll = () => {
+    setPointHover(null);
+    setLineHover(null);
+    onHoverSubject && onHoverSubject(null);
+  };
+
+  const handleLineClick = (s) => {
+    onSubjectClick && onSubjectClick(s);
+  };
+
+  // Choose which subject's card to render for line-hover (skip if a point is hovered).
+  const activeLineSubject = !pointHover && lineHover ? lineHover.subject : null;
+  const activePos = pointHover || lineHover;
+
   return (
-    <div className="overflow-x-auto">
-      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-auto min-w-[640px]" onMouseLeave={() => onHoverSubject && onHoverSubject(null)}>
+    <div ref={containerRef} className="relative overflow-x-auto">
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-auto min-w-[640px]" onMouseLeave={clearAll}>
         {[0, 25, 50, 75, 100].map((g) => {
           const y = yFor(g);
           return (
@@ -409,16 +433,47 @@ function LineChart({ series, subjects, allSubjects, predictedBySubject, hoveredS
             <g
               key={s}
               style={{ opacity: op, transition: 'opacity 160ms ease' }}
-              onMouseEnter={() => onHoverSubject && onHoverSubject(s)}
+              onMouseEnter={(e) => {
+                onHoverSubject && onHoverSubject(s);
+                setLineHover({ subject: s, ...posFromEvent(e) });
+              }}
+              onMouseMove={(e) => setLineHover({ subject: s, ...posFromEvent(e) })}
+              onMouseLeave={() => setLineHover(null)}
+              onClick={() => handleLineClick(s)}
               className="cursor-pointer"
             >
               {/* Invisible thick hit-target for easier hover */}
               <path d={path} fill="none" stroke="transparent" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" />
               <path d={path} fill="none" stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
               {pts.map((p, i) => (
-                <circle key={`${s}-${i}`} cx={xFor(i)} cy={yFor(p.score)} r="3.6" fill={color}>
-                  <title>{`${s} · ${p.topic} · ${p.score}%`}</title>
-                </circle>
+                <circle
+                  key={`${s}-${i}`}
+                  cx={xFor(i)}
+                  cy={yFor(p.score)}
+                  r="4.4"
+                  fill={color}
+                  stroke="white"
+                  strokeWidth="1.4"
+                  className="cursor-pointer"
+                  onMouseEnter={(e) => {
+                    e.stopPropagation();
+                    onHoverSubject && onHoverSubject(s);
+                    setPointHover({ subject: s, topic: p.topic, score: p.score, date: p.date, difficulty: p.difficulty, ...posFromEvent(e) });
+                    setLineHover(null);
+                  }}
+                  onMouseMove={(e) => {
+                    e.stopPropagation();
+                    setPointHover((cur) => (cur ? { ...cur, ...posFromEvent(e) } : cur));
+                  }}
+                  onMouseLeave={(e) => {
+                    e.stopPropagation();
+                    setPointHover(null);
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleLineClick(s);
+                  }}
+                />
               ))}
             </g>
           );
@@ -440,7 +495,14 @@ function LineChart({ series, subjects, allSubjects, predictedBySubject, hoveredS
             <g
               key={`pred-${s}`}
               style={{ opacity: op, transition: 'opacity 160ms ease' }}
-              onMouseEnter={() => onHoverSubject && onHoverSubject(s)}
+              onMouseEnter={(e) => {
+                onHoverSubject && onHoverSubject(s);
+                setLineHover({ subject: s, ...posFromEvent(e) });
+              }}
+              onMouseMove={(e) => setLineHover({ subject: s, ...posFromEvent(e) })}
+              onMouseLeave={() => setLineHover(null)}
+              onClick={() => handleLineClick(s)}
+              className="cursor-pointer"
             >
               {/* dashed connector from the last real point to the predicted marker */}
               <line x1={lastX} y1={yFor(pts[pts.length - 1].score)} x2={predX} y2={predY} stroke={color} strokeWidth="1.5" strokeDasharray="4 3" opacity="0.85" />
@@ -452,11 +514,126 @@ function LineChart({ series, subjects, allSubjects, predictedBySubject, hoveredS
               <text x={predX + 8} y={predY + 10} fontSize="8.5" fill="#64748b">
                 {s.length > 12 ? s.slice(0, 12) + '\u2026' : s}
               </text>
-              <title>{`${s} predicted ${gradeLabel} (${(examTrack || '').toUpperCase()})`}</title>
             </g>
           );
         })}
       </svg>
+
+      {/* Per-attempt point tooltip: topic + score + date */}
+      {pointHover && (
+        <div
+          className="pointer-events-none absolute z-20 rounded-lg bg-slate-900 text-white text-[11px] px-3 py-2 shadow-xl min-w-[160px]"
+          style={{ left: Math.max(4, pointHover.x + 12), top: Math.max(4, pointHover.y - 12), transform: 'translateY(-100%)' }}
+        >
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full" style={{ background: SUBJECT_COLORS[allSubjects.indexOf(pointHover.subject) % SUBJECT_COLORS.length] }} />
+            <span className="font-semibold">{pointHover.subject}</span>
+          </div>
+          <div className="mt-1 text-slate-200 text-[11.5px] leading-tight">{pointHover.topic}</div>
+          <div className="mt-1 flex items-center gap-2 tabular-nums">
+            <span className="font-semibold">{pointHover.score}%</span>
+            <span className="text-slate-400">·</span>
+            <span className="text-slate-300">{formatShortDate(pointHover.date)}</span>
+          </div>
+          {pointHover.difficulty && (
+            <div className="mt-0.5 text-[10px] text-slate-400 uppercase tracking-wide">
+              {String(pointHover.difficulty)}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Line-hover subject info card (predicted grade, latest, best, improvement, thresholds) */}
+      {activeLineSubject && subjectDetails?.[activeLineSubject] && (
+        <SubjectHoverCard
+          subject={activeLineSubject}
+          color={SUBJECT_COLORS[allSubjects.indexOf(activeLineSubject) % SUBJECT_COLORS.length]}
+          details={subjectDetails[activeLineSubject]}
+          examTrack={examTrack}
+          x={activePos.x}
+          y={activePos.y}
+        />
+      )}
+    </div>
+  );
+}
+
+function formatShortDate(d) {
+  if (!d) return '';
+  try {
+    const dt = typeof d === 'string' || typeof d === 'number' ? new Date(d) : d;
+    if (isNaN(dt.getTime())) return String(d);
+    return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch (_) {
+    return String(d);
+  }
+}
+
+function SubjectHoverCard({ subject, color, details, examTrack, x, y }) {
+  const { bd, grade, best, latest, sw, count } = details;
+  const tone = TONE_CLASSES[grade?.tone] || TONE_CLASSES.ok;
+  // Position the card next to the cursor, but keep it inside the container.
+  const style = {
+    left: Math.max(4, x + 14),
+    top: Math.max(4, y + 14),
+  };
+  return (
+    <div
+      className="pointer-events-none absolute z-10 rounded-xl bg-white border border-[color:var(--color-border)] shadow-xl p-3 w-[240px] text-[11.5px]"
+      style={style}
+    >
+      <div className="flex items-center gap-2">
+        <span className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
+        <span className="text-[13px] font-semibold text-slate-900 truncate">{subject}</span>
+        <span className="ml-auto text-[10px] text-slate-500">{count} {count === 1 ? 'attempt' : 'attempts'}</span>
+      </div>
+      <div className="mt-2 flex items-baseline justify-between">
+        <div className="text-[10px] uppercase tracking-[0.14em] font-semibold text-slate-500">
+          {grade?.sub || 'Predicted'}
+        </div>
+        <div className={`text-[16px] font-semibold ${tone?.text || 'text-slate-900'} tabular-nums`}>
+          {grade?.label ?? `${bd.score}%`}
+        </div>
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5">
+        {latest && (
+          <div>
+            <div className="text-[9.5px] uppercase tracking-wide text-slate-400 font-semibold">Latest</div>
+            <div className="tabular-nums font-medium text-slate-800">{latest.score}%</div>
+            <div className="text-slate-400 truncate">{latest.topic}</div>
+          </div>
+        )}
+        {best && (
+          <div>
+            <div className="text-[9.5px] uppercase tracking-wide text-slate-400 font-semibold">Best</div>
+            <div className="tabular-nums font-medium text-slate-800">{best.score}%</div>
+            <div className="text-slate-400 truncate">{best.topic}</div>
+          </div>
+        )}
+        <div>
+          <div className="text-[9.5px] uppercase tracking-wide text-slate-400 font-semibold">Base</div>
+          <div className="tabular-nums font-medium text-slate-800">{bd.baseScore}%</div>
+          {bd.hasImprovement ? (
+            <div className="text-emerald-600 tabular-nums font-medium">+{bd.improvementBonus} bonus</div>
+          ) : (
+            <div className="text-slate-400">no bonus</div>
+          )}
+        </div>
+        <div>
+          <div className="text-[9.5px] uppercase tracking-wide text-slate-400 font-semibold">Topics</div>
+          <div className="text-slate-800">
+            <span className="tabular-nums font-medium text-blue-700">{sw?.strengths?.length ?? 0}</span> strong
+            <span className="text-slate-400 mx-1">·</span>
+            <span className="tabular-nums font-medium text-rose-600">{sw?.weaknesses?.length ?? 0}</span> weak
+          </div>
+          {sw && (
+            <div className="text-slate-400 tabular-nums">&ge; {sw.strengthMin}% / &lt; {sw.weaknessMax}%</div>
+          )}
+        </div>
+      </div>
+      <div className="mt-2 text-[10.5px] text-slate-400 italic">
+        Click line to jump to full details &darr;
+      </div>
     </div>
   );
 }
