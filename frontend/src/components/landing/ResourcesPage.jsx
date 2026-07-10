@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ExternalLink, BadgeCheck, Info, ArrowLeft, Sun, Moon } from 'lucide-react';
 import { RESOURCE_TRACKS } from '../../data/resources';
 import { useApp } from '../../context/AppContext';
@@ -7,8 +7,37 @@ import Reveal from './Reveal';
 
 export default function ResourcesPage({ embedded = false }) {
   const { toggleTheme, state } = useApp();
-  const [active, setActive] = useState(RESOURCE_TRACKS[0].id);
-  const track = RESOURCE_TRACKS.find((t) => t.id === active) || RESOURCE_TRACKS[0];
+
+  // Which tracks does the student "have"?
+  //   - their primary exam track (from onboarding / profile)
+  //   - every exam track referenced by their added courses
+  // Only used when embedded inside the app shell; the anonymous landing
+  // page keeps the full directory so undecided visitors can browse.
+  const studentTrackIds = useMemo(() => {
+    if (!embedded) return null;
+    const ids = new Set();
+    if (state.user?.examTrack) ids.add(state.user.examTrack);
+    (state.courses || []).forEach((c) => { if (c.exam) ids.add(c.exam); });
+    return ids;
+  }, [embedded, state.user?.examTrack, state.courses]);
+
+  const visibleTracks = useMemo(() => {
+    if (!embedded || !studentTrackIds || studentTrackIds.size === 0) return RESOURCE_TRACKS;
+    const filtered = RESOURCE_TRACKS.filter((t) => studentTrackIds.has(t.id));
+    // Fall back to the full list if the student's tracks aren't in the
+    // resource directory yet, so the page never renders empty.
+    return filtered.length > 0 ? filtered : RESOURCE_TRACKS;
+  }, [embedded, studentTrackIds]);
+
+  const [active, setActive] = useState(visibleTracks[0]?.id || RESOURCE_TRACKS[0].id);
+  // Keep the active tab in sync if the visible list changes (e.g., new
+  // course added while the page is open).
+  useEffect(() => {
+    if (!visibleTracks.some((t) => t.id === active)) {
+      setActive(visibleTracks[0]?.id || RESOURCE_TRACKS[0].id);
+    }
+  }, [visibleTracks, active]);
+  const track = visibleTracks.find((t) => t.id === active) || visibleTracks[0] || RESOURCE_TRACKS[0];
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -36,23 +65,25 @@ export default function ResourcesPage({ embedded = false }) {
 
       <main className="flex-1">
         <div className={`${embedded ? 'max-w-[1200px]' : 'max-w-[1280px] mx-auto px-6 pt-16'} pb-24`}>
-          <Reveal>
-            <div className="max-w-[820px]">
-              <div className="eyebrow mb-5">Free resource directory</div>
-              <h1 className="h-display text-[44px] sm:text-[56px] lg:text-[64px] leading-[1.05]">
-                Every official source, one page.
-              </h1>
-              <p className="mt-6 text-[16.5px] text-slate-600 leading-relaxed max-w-[640px]">
-                Past papers, syllabi, and practice material for every curriculum we support&mdash;official
-                sources first, then the best free archives. No sign-up needed. We link to the
-                original publishers rather than re-hosting their papers.
-              </p>
-            </div>
-          </Reveal>
+          {!embedded && (
+            <Reveal>
+              <div className="max-w-[820px]">
+                <div className="eyebrow mb-5">Free resource directory</div>
+                <h1 className="h-display text-[44px] sm:text-[56px] lg:text-[64px] leading-[1.05]">
+                  Every official source, one page.
+                </h1>
+                <p className="mt-6 text-[16.5px] text-slate-600 leading-relaxed max-w-[640px]">
+                  Past papers, syllabi, and practice material for every curriculum we support&mdash;official
+                  sources first, then the best free archives. No sign-up needed. We link to the
+                  original publishers rather than re-hosting their papers.
+                </p>
+              </div>
+            </Reveal>
+          )}
 
-          <div className={`sticky ${embedded ? 'top-0' : 'top-[60px]'} z-30 ${embedded ? '' : '-mx-6 px-6'} py-3 mt-10 bg-white/85 backdrop-blur border-b border-slate-200/70`}>
+          <div className={`sticky ${embedded ? 'top-0' : 'top-[60px]'} z-30 ${embedded ? '' : '-mx-6 px-6'} py-3 ${embedded ? '' : 'mt-10'} bg-white/85 backdrop-blur border-b border-slate-200/70`}>
             <div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Curricula">
-              {RESOURCE_TRACKS.map((t) => (
+              {visibleTracks.map((t) => (
                 <button
                   key={t.id}
                   role="tab"
@@ -60,8 +91,8 @@ export default function ResourcesPage({ embedded = false }) {
                   onClick={() => setActive(t.id)}
                   className={`shrink-0 px-4 py-2 rounded-full text-[13.5px] font-medium border transition-colors ${
                     t.id === active
-                      ? 'bg-slate-900 text-white border-slate-900'
-                      : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-blue-400 hover:text-blue-700'
                   }`}
                 >
                   {t.short}
