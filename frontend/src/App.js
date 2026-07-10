@@ -18,8 +18,11 @@ function Router() {
 
   if (!loaded) return null;
 
-  // Free resource directory — reachable whether signed in or not
-  if (hash.startsWith('#resources')) {
+  // Free resource directory:
+  //   - anonymous users: standalone landing page (its own chrome)
+  //   - logged-in users: rendered inside the AppShell so the sidebar
+  //     remains visible (see AppShell's 'resources' route)
+  if (!state.user && hash.startsWith('#resources')) {
     return <ResourcesPage />;
   }
 

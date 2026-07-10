@@ -5,7 +5,7 @@ import { useApp } from '../../context/AppContext';
 import Footer from './Footer';
 import Reveal from './Reveal';
 
-export default function ResourcesPage() {
+export default function ResourcesPage({ embedded = false }) {
   const { toggleTheme, state } = useApp();
   const [active, setActive] = useState(RESOURCE_TRACKS[0].id);
   const track = RESOURCE_TRACKS.find((t) => t.id === active) || RESOURCE_TRACKS[0];
@@ -13,27 +13,29 @@ export default function ResourcesPage() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   return (
-    <div className="section-bg min-h-screen flex flex-col">
-      <header className="sticky top-0 z-40 bg-white/85 backdrop-blur border-b border-[color:var(--color-border)]">
-        <div className="max-w-[1280px] mx-auto px-6 h-[60px] flex items-center justify-between">
-          <a href="#top" className="flex items-center gap-2 text-[14px] text-slate-600 hover:text-slate-900 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Back to InfinitySheets
-          </a>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={toggleTheme}
-              aria-label={state.theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-              className="w-9 h-9 inline-flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors"
-            >
-              {state.theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-            <a href="#signup" className="btn-violet px-4 py-2 rounded-lg text-[14px] font-medium shadow-sm">Start Free</a>
+    <div className={`${embedded ? '' : 'section-bg min-h-screen'} flex flex-col`}>
+      {!embedded && (
+        <header className="sticky top-0 z-40 bg-white/85 backdrop-blur border-b border-[color:var(--color-border)]">
+          <div className="max-w-[1280px] mx-auto px-6 h-[60px] flex items-center justify-between">
+            <a href="#top" className="flex items-center gap-2 text-[14px] text-slate-600 hover:text-slate-900 transition-colors">
+              <ArrowLeft className="w-4 h-4" /> Back to InfinitySheets
+            </a>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleTheme}
+                aria-label={state.theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                className="w-9 h-9 inline-flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors"
+              >
+                {state.theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </button>
+              <a href="#signup" className="btn-violet px-4 py-2 rounded-lg text-[14px] font-medium shadow-sm">Start Free</a>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       <main className="flex-1">
-        <div className="max-w-[1280px] mx-auto px-6 pt-16 pb-24">
+        <div className={`${embedded ? 'max-w-[1200px]' : 'max-w-[1280px] mx-auto px-6 pt-16'} pb-24`}>
           <Reveal>
             <div className="max-w-[820px]">
               <div className="eyebrow mb-5">Free resource directory</div>
@@ -48,7 +50,7 @@ export default function ResourcesPage() {
             </div>
           </Reveal>
 
-          <div className="sticky top-[60px] z-30 -mx-6 px-6 py-3 mt-10 bg-white/85 backdrop-blur border-b border-slate-200/70">
+          <div className={`sticky ${embedded ? 'top-0' : 'top-[60px]'} z-30 ${embedded ? '' : '-mx-6 px-6'} py-3 mt-10 bg-white/85 backdrop-blur border-b border-slate-200/70`}>
             <div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Curricula">
               {RESOURCE_TRACKS.map((t) => (
                 <button
@@ -107,19 +109,21 @@ export default function ResourcesPage() {
             </div>
           </div>
 
-          <div className="mt-20 rounded-3xl bg-slate-900 px-8 py-12 lg:px-14 text-center">
-            <h2 className="h-display text-white text-[30px] sm:text-[38px]">Or skip the hunting entirely.</h2>
-            <p className="mt-4 text-[15px] text-slate-300 max-w-[560px] mx-auto leading-relaxed">
-              InfinitySheets generates fresh exam-style questions for your syllabus, finds your weak
-              concepts, and plans your practice&mdash;so you never have to dig through archives again.
-            </p>
-            <a href="#signup" className="mt-7 inline-flex items-center justify-center px-6 py-3 rounded-xl bg-blue-500 hover:bg-blue-400 text-white text-[14.5px] font-medium transition-colors">
-              Start Free
-            </a>
-          </div>
+          {!embedded && (
+            <div className="mt-20 rounded-3xl bg-white border border-slate-200 px-8 py-12 lg:px-14 text-center shadow-sm">
+              <h2 className="h-display text-slate-900 text-[30px] sm:text-[38px]">Or skip the hunting entirely.</h2>
+              <p className="mt-4 text-[15px] text-slate-600 max-w-[560px] mx-auto leading-relaxed">
+                InfinitySheets generates fresh exam-style questions for your syllabus, finds your weak
+                concepts, and plans your practice&mdash;so you never have to dig through archives again.
+              </p>
+              <a href="#signup" className="mt-7 inline-flex items-center justify-center px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[14.5px] font-medium transition-colors">
+                Start Free
+              </a>
+            </div>
+          )}
         </div>
       </main>
-      <Footer />
+      {!embedded && <Footer />}
     </div>
   );
 }

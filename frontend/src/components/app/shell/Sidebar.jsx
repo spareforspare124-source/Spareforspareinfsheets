@@ -11,8 +11,8 @@ import { Infinity, LogOut, RotateCcw, PanelLeftClose } from 'lucide-react';
  */
 export default function Sidebar({ nav, activeKey, isDemo, onNavigate, onResetDemo, onLogout, onClose }) {
   return (
-    <aside className="border border-[color:var(--color-border)] flex flex-col bg-white relative overflow-hidden rounded-2xl shadow-sm">
-      <div className="relative px-5 pt-5 pb-6 flex items-center gap-2">
+    <aside className="border border-[color:var(--color-border)] flex flex-col bg-white relative overflow-hidden rounded-2xl shadow-sm h-full">
+      <div className="relative px-5 pt-5 pb-6 flex items-center gap-2 shrink-0">
         <span className="w-9 h-9 rounded-xl bg-[color:var(--color-primary)] flex items-center justify-center" data-testid="brand-mark">
           <Infinity className="w-5 h-5 text-white" strokeWidth={2.6} />
         </span>
