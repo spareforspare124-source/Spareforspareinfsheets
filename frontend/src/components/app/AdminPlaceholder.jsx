@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Shield, Plus, Trash2, FileText, Sparkles, Filter, Upload, Link2, X, Loader2, Check } from 'lucide-react';
+import { Shield, Plus, Trash2, FileText, Sparkles, Filter, Upload, Link2, X, Loader2, Check, FlaskConical } from 'lucide-react';
 import { SUBJECTS, TOPICS, EXAM_TRACKS } from '../../data/mock';
 import { toast } from 'sonner';
 
@@ -41,7 +41,7 @@ const API_BASE = (typeof window !== 'undefined' && window.location && window.loc
 // --------------------------------------------------------------------------
 
 export default function AdminPlaceholder() {
-  const { state, addPastPaper, removePastPaper } = useApp();
+  const { state, addPastPaper, removePastPaper, seedTestPerformance } = useApp();
   const defaultSyllabus = state.user?.examTrack || 'CBSE';
   const [syllabus, setSyllabus] = useState(defaultSyllabus);
   const [subject, setSubject] = useState(() => (SUBJECTS[defaultSyllabus] || [])[0] || '');
@@ -55,16 +55,30 @@ export default function AdminPlaceholder() {
 
   const subjectsForSyllabus = SUBJECTS[syllabus] || [];
 
+  const handleSeed = () => {
+    if (!window.confirm('Replace your worksheet history with 9 randomized attempts per subject? This overwrites current progress.')) return;
+    seedTestPerformance();
+    toast.success('Test performance seeded — check Dashboard, Performance and history.');
+  };
+
   return (
     <div className="max-w-[1200px]" data-testid="admin-placeholder">
       <div className="flex items-center gap-3 mb-5">
         <span className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center">
           <Shield className="w-5 h-5" />
         </span>
-        <div>
+        <div className="flex-1">
           <div className="text-[11px] tracking-[0.16em] uppercase font-semibold text-blue-600">Admin</div>
           <h2 className="text-[24px] font-semibold tracking-tight text-slate-900">Past paper question bank</h2>
         </div>
+        <button
+          onClick={handleSeed}
+          data-testid="admin-seed-performance"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-[13.5px] font-semibold text-white bg-violet-600 hover:bg-violet-700 transition-colors shadow-sm"
+        >
+          <FlaskConical className="w-4 h-4" />
+          Create test performance
+        </button>
       </div>
 
       {/* Category picker */}

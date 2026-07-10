@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
+import { SUBJECTS, TOPICS } from '../data/mock';
 
 // NOTE on storage: this app does NOT store credentials, tokens, or PII secrets.
 // Only non-sensitive study data (worksheet history, mistakes, theme, courses, settings).
@@ -238,6 +239,135 @@ export function AppProvider({ children }) {
     setState((s) => ({ ...s, worksheets: [], mistakes: [], streak: 0, questionsToday: 0, goalDate: null, lastStudyDate: null }));
   }, []);
 
+  // Fabricate 9 worksheets per subject with randomized performance, feeding
+  // the dashboard, performance chart, mistake history and worksheet history.
+  // Used from the Admin page ("Create test performance") to give the demo /
+  // account a realistic-looking body of study data without needing to sit
+  // through 40+ worksheet flows.
+  const seedTestPerformance = useCallback(() => {
+    setState((s) => {
+      const track = s.user?.examTrack || 'CBSE';
+      // Prefer the subjects the user actually picked; fall back to the full
+      // syllabus list for the exam track.
+      const userSubs = Array.isArray(s.user?.subjects) && s.user.subjects.length > 0
+        ? s.user.subjects
+        : (SUBJECTS[track] || []);
+      const subs = userSubs.length > 0 ? userSubs : ['Mathematics', 'Physics', 'Chemistry'];
+
+      const DIFFS = ['Easy', 'Medium', 'Exam level', 'Hard'];
+      const randInt = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+      const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+      const worksheets = [];
+      const mistakes = [];
+      let totalQuestionsToday = 0;
+      const today = new Date().toISOString().slice(0, 10);
+
+      subs.forEach((subject) => {
+        const topics = TOPICS[subject] && TOPICS[subject].length > 0
+          ? TOPICS[subject]
+          : ['General'];
+        for (let i = 0; i < 9; i++) {
+          const total = pick([5, 8, 10, 10, 12]);
+          // Random score, weighted toward the middle-to-upper range so the
+          // chart shows a plausible improvement trajectory rather than 9
+          // rock-bottom scores.
+          const score = Math.max(20, Math.min(100, Math.round(45 + Math.random() * 55)));
+          const correct = Math.round((score / 100) * total);
+          const wrongCount = total - correct;
+          // Age worksheets so the newest is today and the oldest is ~40 days
+          // back — that lets the "Trend over time" chart draw meaningful
+          // lines instead of collapsing every attempt onto a single x.
+          const daysBack = (8 - i) * 4 + randInt(0, 3);
+          const dt = new Date();
+          dt.setDate(dt.getDate() - daysBack);
+          const sheetTopics = [pick(topics)];
+          if (Math.random() < 0.35 && topics.length > 1) {
+            const extra = pick(topics.filter((t) => t !== sheetTopics[0]));
+            if (extra) sheetTopics.push(extra);
+          }
+
+          const questions = Array.from({ length: total }).map((_, qi) => {
+            const t = sheetTopics[qi % sheetTopics.length] || sheetTopics[0];
+            return {
+              id: `q_${subject}_${i}_${qi}`,
+              subject,
+              topic: t,
+              _topic: t,
+              q: `Sample question ${qi + 1} for ${t}.`,
+              options: ['Option A', 'Option B', 'Option C', 'Option D'],
+              a: 0,
+              answerType: 'Multiple choice',
+            };
+          });
+          // Mark answers so that exactly `correct` are right; the first
+          // `correct` questions are correct, the rest get a wrong answer.
+          const answers = questions.map((_, qi) => (qi < correct ? 0 : 1));
+          const results = questions.map((_, qi) => qi < correct);
+          const sheetId = `seed_${subject.replace(/\W+/g, '_')}_${i}_${dt.getTime()}`;
+          const sheet = {
+            id: sheetId,
+            subject,
+            topic: sheetTopics.join(', '),
+            topics: sheetTopics,
+            difficulty: pick(DIFFS),
+            length: total,
+            answerType: 'Multiple choice',
+            duration: 20,
+            pastPapers: false,
+            aiGenerated: true,
+            questions,
+            answers,
+            results,
+            total,
+            correct,
+            score,
+            durationSec: randInt(180, 900),
+            date: dt.toISOString(),
+          };
+          worksheets.push(sheet);
+
+          // Materialize mistake entries for the wrong questions so the
+          // Mistake History and Strengths pages have material to show.
+          for (let qi = correct; qi < total; qi++) {
+            const q = questions[qi];
+            mistakes.push({
+              id: `${sheetId}-${qi}`,
+              subject,
+              topic: q._topic,
+              question: q.q,
+              options: q.options,
+              correct: q.a,
+              given: answers[qi],
+              answerType: 'Multiple choice',
+              typedAnswer: null,
+              examKeywords: null,
+              date: sheet.date,
+            });
+          }
+          // Only today's questions count toward today's goal.
+          if (dt.toISOString().slice(0, 10) === today) {
+            totalQuestionsToday += total;
+          }
+        }
+      });
+
+      // Sort so the newest is first (matches how recordWorksheet inserts).
+      worksheets.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      mistakes.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+      return {
+        ...s,
+        worksheets,
+        mistakes: mistakes.slice(0, 200),
+        streak: Math.max(s.streak || 0, 5),
+        questionsToday: totalQuestionsToday,
+        goalDate: today,
+        lastStudyDate: today,
+      };
+    });
+  }, []);
+
   const deleteAccount = useCallback(() => {
     setState(defaultState);
     try {
@@ -376,6 +506,7 @@ export function AppProvider({ children }) {
     updateProfile,
     updateSettings,
     resetProgress,
+    seedTestPerformance,
     deleteAccount,
     recordWorksheet,
     removeMistake,
@@ -403,6 +534,7 @@ export function AppProvider({ children }) {
     updateProfile,
     updateSettings,
     resetProgress,
+    seedTestPerformance,
     deleteAccount,
     recordWorksheet,
     removeMistake,
