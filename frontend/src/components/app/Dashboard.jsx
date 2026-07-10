@@ -1,8 +1,35 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { CalendarClock, Sparkles } from 'lucide-react';
 import { useStrengthsWeaknesses, useSavedSwOverrides } from '../../hooks/useStrengthsWeaknesses';
 import { predictedScore, formatGrade, scoreToIBGrade, TONE_CLASSES, isGradedTrack } from '../../lib/predictedGrade';
+
+// Rotating dashboard greetings. `{name}` is substituted with the student's
+// first name (falling back to "Student"). One is picked per component mount,
+// so refreshing the page yields a new greeting.
+const GREETING_TEMPLATES = [
+  '{name} strikes again!',
+  'Ready for another win, {name}?',
+  'Welcome back, {name}.',
+  "Let's crush it today, {name}.",
+  'Back at it, {name}!',
+  'Time to shine, {name}.',
+  'Your worksheets missed you, {name}.',
+  'One session closer, {name}.',
+  '{name}, the grind continues.',
+  'Nice to see you, {name}.',
+  "Let's make today count, {name}.",
+  'Onwards and upwards, {name}.',
+  '{name} is in the building.',
+  'Focus mode: engaged, {name}.',
+  'Small wins add up, {name}.',
+];
+
+function pickGreeting(fullName) {
+  const name = (fullName || 'Student').split(' ')[0] || 'Student';
+  const tpl = GREETING_TEMPLATES[Math.floor(Math.random() * GREETING_TEMPLATES.length)];
+  return tpl.replace('{name}', name);
+}
 
 function Ring({ value = 0 }) {
   const r = 32;
@@ -129,10 +156,13 @@ export default function Dashboard({ go }) {
   const examCountdown = nearest ? nearest.days : fallbackDays;
   const examLabel = nearest ? nearest.name : (fallbackDate ? new Date(fallbackDate).toLocaleDateString() : null);
 
+  // Random greeting — picked once per mount, so it changes every refresh.
+  const [greeting] = useState(() => pickGreeting(state.user?.name));
+
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-[28px] font-semibold tracking-tight text-slate-900">Welcome back, {state.user?.name || 'Student'}.</h2>
+        <h2 className="text-[28px] font-semibold tracking-tight text-slate-900">{greeting}</h2>
         <p className="text-[14px] text-slate-500 mt-1">Here is your study overview.</p>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

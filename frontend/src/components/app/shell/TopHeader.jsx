@@ -1,19 +1,32 @@
 import React from 'react';
-import { Moon, Sun, Sparkles } from 'lucide-react';
+import { Moon, Sun, Sparkles, PanelLeftOpen } from 'lucide-react';
 
 /**
  * Page header shown at the top of every dashboard page.
  * Displays the eyebrow exam track, the page title, and the primary
  * page-scoped action (currently only rendered on the dashboard route).
+ * When the sidebar is collapsed, a chevron re-opener appears on the left.
  */
-export default function TopHeader({ examTrack, title, activeKey, isDark, courseCount, onToggleTheme, onNewWorksheet }) {
+export default function TopHeader({ examTrack, title, activeKey, isDark, courseCount, onToggleTheme, onNewWorksheet, sidebarOpen, onOpenSidebar }) {
   return (
     <header className="px-8 pt-7 pb-2 flex items-start justify-between border-b border-[color:var(--color-border)] bg-white" data-testid="top-header">
-      <div>
-        <div className="eyebrow-muted mb-1 flex items-center gap-2">
-          <span>{examTrack}</span>
+      <div className="flex items-start gap-3">
+        {!sidebarOpen && onOpenSidebar && (
+          <button
+            onClick={onOpenSidebar}
+            data-testid="header-open-sidebar"
+            aria-label="Open sidebar"
+            className="mt-1 w-9 h-9 rounded-lg border border-[color:var(--color-border)] bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition-colors"
+          >
+            <PanelLeftOpen className="w-4 h-4" />
+          </button>
+        )}
+        <div>
+          <div className="eyebrow-muted mb-1 flex items-center gap-2">
+            <span>{examTrack}</span>
+          </div>
+          <h1 className="text-[28px] font-semibold tracking-tight text-slate-900" data-testid="page-title">{title}</h1>
         </div>
-        <h1 className="text-[28px] font-semibold tracking-tight text-slate-900" data-testid="page-title">{title}</h1>
       </div>
       <div className="flex items-center gap-2">
         <button

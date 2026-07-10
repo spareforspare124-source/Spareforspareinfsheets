@@ -158,7 +158,7 @@ export default function OnboardingFlow() {
                 <span className="text-[11px] tracking-[0.16em] uppercase font-semibold text-red-700">Step 3</span>
               </div>
               <h2 className="text-[26px] font-semibold tracking-tight text-slate-900">Which subjects are you studying?</h2>
-              <p className="text-[13.5px] text-slate-500 mt-1">Pick everything you want to practice. You can change this later in Profile.</p>
+              <p className="text-[13.5px] text-slate-500 mt-1">Pick everything you want to practice. You can change this later in Settings.</p>
 
               <div className="mt-5 flex items-center justify-between gap-3">
                 <div className="text-[12.5px] text-slate-500">{subjects.length} of {trackSubjects.length} selected</div>
