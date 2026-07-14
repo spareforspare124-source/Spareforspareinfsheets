@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { CalendarClock, Sparkles } from 'lucide-react';
 import { useStrengthsWeaknesses, useSavedSwOverrides } from '../../hooks/useStrengthsWeaknesses';
 import { predictedScore, formatGrade, scoreToIBGrade, TONE_CLASSES, isGradedTrack } from '../../lib/predictedGrade';
+import PredictedScoreMini from './PredictedScoreMini';
 
 // Rotating dashboard greetings. `{name}` is substituted with the student's
 // first name (falling back to "Student"). One is picked per component mount,
@@ -116,6 +117,39 @@ export default function Dashboard({ go }) {
     });
   }, [ws, examTrack]);
 
+  // Shape the same map the Performance tab's PredictedScoreMini expects,
+  // so the tile renders identically in both places.
+  const predictedBySubject = useMemo(() => {
+    const map = {};
+    perSubjectGrades.forEach((g) => {
+      map[g.subject] = { predicted: g.score, count: g.count, grade: g.grade };
+    });
+    return map;
+  }, [perSubjectGrades]);
+  const visibleSubjects = useMemo(() => perSubjectGrades.map((g) => g.subject), [perSubjectGrades]);
+
+  // Overall accuracy — average of each subject's accuracy, weighted by the
+  // number of worksheets the student has done in that subject (per spec:
+  // "this accuracy score is determined by the amount of worksheets done in
+  // a subject"). Falls back to null when no worksheets exist yet.
+  const overallAccuracy = useMemo(() => {
+    if (ws.length === 0) return null;
+    let weighted = 0;
+    let totalSheets = 0;
+    perSubjectGrades.forEach((g) => {
+      const subjectWs = ws.filter((w) => w.subject === g.subject);
+      if (subjectWs.length === 0) return;
+      const totalQ = subjectWs.reduce((s, w) => s + (w.total || 0), 0);
+      const totalC = subjectWs.reduce((s, w) => s + (w.correct || 0), 0);
+      if (totalQ === 0) return;
+      const subjectAccuracy = (totalC / totalQ) * 100;
+      weighted += subjectAccuracy * subjectWs.length;
+      totalSheets += subjectWs.length;
+    });
+    if (totalSheets === 0) return null;
+    return Math.round(weighted / totalSheets);
+  }, [ws, perSubjectGrades]);
+
   // IB total: sum of per-subject IB grades (out of subjectCount × 7).
   // Only shown when the student is on the IB track — CBSE/ICSE stay per-subject.
   const ibTotal = useMemo(() => {
@@ -167,7 +201,20 @@ export default function Dashboard({ go }) {
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <DaysStat days={examCountdown} subLabel={examLabel} />
-        <Stat label="Study streak" value={`${state.streak || 0} ${(state.streak || 0) === 1 ? 'day' : 'days'}`} />
+        <PredictedScoreMini
+          predictedBySubject={predictedBySubject}
+          visibleSubjects={visibleSubjects}
+          examTrack={examTrack}
+          label="Predicted grade"
+          footer={
+            overallAccuracy !== null && (
+              <div className="mt-2 pt-2 border-t border-[color:var(--color-border)] flex items-baseline justify-between gap-2">
+                <span className="text-[10px] tracking-[0.14em] uppercase font-semibold text-slate-500">Accuracy</span>
+                <span className="text-[15px] font-semibold text-slate-900 tabular-nums">{overallAccuracy}%</span>
+              </div>
+            )
+          }
+        />
         <Stat label="Questions answered" value={stats.total} />
         <Stat label="Worksheets completed" value={stats.sheets} />
       </div>
