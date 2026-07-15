@@ -1,11 +1,20 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { FileText, AlertTriangle } from 'lucide-react';
+import { FileText, AlertTriangle, Sparkles } from 'lucide-react';
 import EmptyStateScene from '../decor/EmptyStateScene';
 
-function MistakeHistoryButton() {
+// Action row shown above the worksheet list. Kept as its own component so it
+// renders identically in the empty state and the populated state below.
+function ActionButtons() {
   return (
-    <div className="flex justify-end mb-4">
+    <div className="flex justify-end mb-4 gap-2 flex-wrap">
+      <button
+        onClick={() => { window.location.hash = '#worksheets'; }}
+        data-testid="history-new-worksheet-btn"
+        className="btn-violet inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-semibold"
+      >
+        <Sparkles className="w-4 h-4" /> Create new worksheet
+      </button>
       <button
         onClick={() => { window.location.hash = '#mistakes'; }}
         data-testid="mistake-history-btn"
@@ -23,7 +32,7 @@ export default function WorksheetHistory() {
   if (ws.length === 0) {
     return (
       <div>
-        <MistakeHistoryButton />
+        <ActionButtons />
         <div className="relative rounded-2xl border border-dashed border-[color:var(--color-border)] bg-white overflow-hidden min-h-[360px]">
           <EmptyStateScene variant="lab" className="absolute inset-0" />
           <div className="relative p-12 text-center">
@@ -37,13 +46,13 @@ export default function WorksheetHistory() {
   }
   return (
     <div>
-      <MistakeHistoryButton />
+      <ActionButtons />
       <div className="flex flex-col gap-3">
         {ws.map((w) => (
           <div key={w.id} className="rounded-xl border border-[color:var(--color-border)] bg-white p-5 flex items-center justify-between">
             <div className="min-w-0">
-              <div className="text-[15px] font-semibold text-slate-900">{w.subject} · {w.topic}</div>
-              <div className="text-[12.5px] text-slate-500 mt-1">{new Date(w.date).toLocaleString()} · {w.difficulty} · {w.length} questions</div>
+              <div className="text-[15px] font-semibold text-slate-900">{w.subject} &middot; {w.topic}</div>
+              <div className="text-[12.5px] text-slate-500 mt-1">{new Date(w.date).toLocaleString()} &middot; {w.difficulty} &middot; {w.length} questions</div>
             </div>
             <div className="text-right">
               <div className="text-[18px] font-semibold text-slate-900">{w.score}%</div>
