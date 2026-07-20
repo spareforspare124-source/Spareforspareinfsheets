@@ -1,29 +1,43 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Eye } from 'lucide-react';
+import { ArrowRight, Play } from 'lucide-react';
 import InfinityBackground from '../decor/InfinityBackground';
-import { DoodleLaptop, DoodleBooks } from '../decor/StudentDoodles';
-import { useApp } from '../../context/AppContext';
+import { DoodleBooks, DoodleFlask, DoodleEquations } from '../decor/StudyDoodles';
+import Emphasis from './Emphasis';
+import WatchVideoModal from './WatchVideoModal';
+import FeatureCarousel from './FeatureCarousel';
+import Waitlist from './Waitlist';
 import { EXAM_TRACKS } from '../../data/mock';
 
+/* Static heading; the word "you" gets swept with a marker highlight
+   shortly after load — study vibes, no typing. */
+function HeroHeading() {
+  const [highlight, setHighlight] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setHighlight(true), 700);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <h1 className="h-display text-[56px] sm:text-[80px] lg:text-[108px] leading-[1.02] max-w-[1080px]">
+      A study tool tailored just for{' '}
+      <span className={`hl-mark hl-serif ${highlight ? 'hl-on' : ''}`}>you</span>.
+    </h1>
+  );
+}
+
 export default function Hero() {
-  const { startDemo } = useApp();
-  const onDemo = () => { startDemo(); window.location.hash = '#dashboard'; };
+  const [videoOpen, setVideoOpen] = useState(false);
   return (
     <section id="top" className="relative section-bg overflow-hidden">
+      <WatchVideoModal open={videoOpen} onClose={() => setVideoOpen(false)} />
       <InfinityBackground variant="hero" />
       <div className="absolute inset-0 grid-fade pointer-events-none" />
-      <div className="hidden xl:block absolute left-[4%] top-[30%] opacity-90 pointer-events-none"><DoodleBooks width={140} /></div>
-      <div className="hidden xl:block absolute right-[4%] top-[24%] opacity-90 pointer-events-none"><DoodleLaptop width={160} /></div>
+      <div className="hidden xl:block absolute left-[4%] top-[26%] opacity-90 pointer-events-none"><DoodleBooks /></div>
+      <div className="hidden xl:block absolute left-[7%] top-[62%] opacity-80 pointer-events-none"><DoodleEquations width={130} /></div>
+      <div className="hidden xl:block absolute right-[5%] top-[28%] opacity-90 pointer-events-none"><DoodleFlask /></div>
       <div className="relative max-w-[1280px] mx-auto px-6 min-h-[92svh] flex flex-col items-center justify-center text-center pt-20 pb-10">
-        <motion.h1
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="h-display text-[56px] sm:text-[80px] lg:text-[108px] leading-[1.02] max-w-[1080px]"
-        >
-          A study tool <span className="font-serif-italic">tailored</span> just for you.
-        </motion.h1>
+        <HeroHeading />
         <motion.p
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -32,7 +46,7 @@ export default function Hero() {
         >
           Coaching centres win exams with endless on-syllabus practice, focused work on weak
           concepts, and total exam familiarity. InfinitySheets puts that training on any
-          device&mdash;completely free.
+          device&mdash;<Emphasis variant="highlight" className="text-slate-800 font-medium">completely free</Emphasis>.
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -40,49 +54,54 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
           className="mt-9 flex flex-wrap items-center justify-center gap-3"
         >
-          <a href="#signup" className="btn-violet inline-flex items-center gap-2 px-7 py-4 rounded-xl text-[16.5px] font-medium shadow-sm">
-            Start Free <ArrowRight className="w-6 h-6" />
+          <a href="#signup" className="btn-violet inline-flex items-center gap-2 px-8 py-4 rounded-xl text-[17px] font-semibold shadow-lg shadow-violet-300/40">
+            Start Free <ArrowRight className="w-5 h-5" />
           </a>
-          <button onClick={onDemo} className="inline-flex items-center gap-2 px-7 py-4 rounded-xl text-[16.5px] font-medium text-violet-700 bg-violet-50 border border-violet-200 hover:bg-violet-100 transition-colors">
-            <Eye className="w-6 h-6" /> Try without signing up
+          {/* Secondary: the product walkthrough — the only visual proof on the page */}
+          <button onClick={() => setVideoOpen(true)} className="btn-outline-dark inline-flex items-center gap-2 px-6 py-4 rounded-xl text-[16px] font-medium">
+            <Play className="w-5 h-5 text-red-600" /> Watch video
           </button>
         </motion.div>
+        <motion.a
+          href="#try"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.28 }}
+          className="mt-5 text-[14px] text-blue-600 hover:text-blue-700 font-medium transition-colors"
+        >
+          or try a real exam question right now &darr;
+        </motion.a>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full flex justify-center"
+        >
+          <Waitlist variant="inline" />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-16 text-center"
+        >
+          <div className="eyebrow mb-3">In the wild</div>
+          <h2 className="h-display text-[30px] sm:text-[38px] lg:text-[44px] leading-[1.05]">Students already studying with it.</h2>
+        </motion.div>
+        <FeatureCarousel />
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.35 }}
-          className="mt-10 flex flex-wrap items-center justify-center gap-2 max-w-[720px]"
+          transition={{ duration: 0.8, delay: 0.55 }}
+          className="mt-10 flex flex-wrap lg:flex-nowrap items-center justify-center gap-2"
         >
           {EXAM_TRACKS.map((t) => (
-            <span key={t.id} className="px-4 py-1.5 rounded-full border border-slate-200 bg-white/70 backdrop-blur text-[14px] text-slate-600">
+            <a key={t.id} href={`#resources?track=${t.id}`} className="whitespace-nowrap px-3.5 py-1.5 rounded-full border border-slate-200 bg-white/70 backdrop-blur text-[13.5px] text-slate-600 hover:border-blue-400 hover:text-blue-700 transition-colors">
               {t.name}
-            </span>
+            </a>
           ))}
         </motion.div>
       </div>
-      <motion.div
-        initial={{ opacity: 0, y: 60, scale: 0.94 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 1, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="relative max-w-[1080px] mx-auto px-6 pb-24"
-      >
-        <div className="absolute inset-x-12 top-6 bottom-16 rounded-full bg-blue-400/20 blur-3xl pointer-events-none" aria-hidden="true" />
-        <div className="relative rounded-3xl shadow-2xl shadow-blue-900/15 ring-1 ring-slate-900/10 overflow-hidden">
-          <img
-            src="/screenshots/dashboard.png"
-            alt="The InfinitySheets dashboard showing study streak, daily goal, upcoming exams, and strong and weak topics"
-            className="shot-light w-full h-auto block"
-            loading="eager"
-          />
-          <img
-            src="/screenshots/dashboard-dark.png"
-            alt="The InfinitySheets dashboard in dark mode showing study streak, daily goal, upcoming exams, and strong and weak topics"
-            className="shot-dark w-full h-auto block"
-            loading="eager"
-          />
-        </div>
-        <p className="text-center text-[12.5px] text-slate-400 mt-4">The InfinitySheets dashboard&mdash;a real screenshot, not a mockup.</p>
-      </motion.div>
     </section>
   );
 }

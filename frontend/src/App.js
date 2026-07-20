@@ -3,6 +3,7 @@ import './App.css';
 import { AppProvider, useApp } from './context/AppContext';
 import LandingPage from './components/landing/LandingPage';
 import ResourcesPage from './components/landing/ResourcesPage';
+import PrivacyPage from './components/landing/PrivacyPage';
 import AppShell from './components/app/AppShell';
 import { Toaster } from './components/ui/sonner';
 
@@ -24,6 +25,11 @@ function Router() {
   //     remains visible (see AppShell's 'resources' route)
   if (!state.user && hash.startsWith('#resources')) {
     return <ResourcesPage />;
+  }
+
+  // Privacy policy — always available, no auth needed.
+  if (hash.startsWith('#privacy')) {
+    return <PrivacyPage />;
   }
 
   // If user is logged in, show the dashboard app

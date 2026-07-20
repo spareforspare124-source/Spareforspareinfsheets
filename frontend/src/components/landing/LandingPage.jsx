@@ -1,21 +1,37 @@
 import React, { useEffect } from 'react';
 import Navbar from './Navbar';
 import Hero from './Hero';
+import ProductStats from './ProductStats';
+import ProductPeek from './ProductPeek';
 import WhyDifferent from './WhyDifferent';
 import HowItWorks from './HowItWorks';
-import Features from './Features';
 import TryQuestion from './TryQuestion';
 import PredictedGrade from './PredictedGrade';
 import FreeResources from './FreeResources';
-import Research from './Research';
+import FoundingStory from './FoundingStory';
 import FAQ from './FAQ';
 import Pricing from './Pricing';
-import FinalCTA from './FinalCTA';
-import SignupSection from './SignupSection';
+import StudentGallery3D from './StudentGallery3D';
+import Waitlist from './Waitlist';
 import Footer from './Footer';
+import MobileStickyCTA from './MobileStickyCTA';
+
+// On a fresh page load, a leftover section anchor (#signup, #pricing...)
+// makes the page restore scroll deep into the content. Handle the initial
+// hash exactly once per page load (module-level so StrictMode's double
+// effect invocation can't smooth-scroll on the stale initial hash).
+let handledInitialAnchor = false;
 
 export default function LandingPage({ hash }) {
   useEffect(() => {
+    if (!handledInitialAnchor) {
+      handledInitialAnchor = true;
+      if (hash && hash.length > 1 && document.getElementById(hash.slice(1))) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        window.scrollTo(0, 0);
+      }
+      return;
+    }
     if (hash && hash.startsWith('#') && hash.length > 1) {
       const id = hash.slice(1);
       const el = document.getElementById(id);
@@ -31,18 +47,21 @@ export default function LandingPage({ hash }) {
     <div className="section-bg">
       <Navbar onStart={onStart} />
       <Hero />
+      <ProductPeek />
+      <StudentGallery3D />
+      <ProductStats />
       <WhyDifferent />
       <HowItWorks />
-      <Features />
       <TryQuestion />
       <PredictedGrade />
       <FreeResources />
-      <Research />
+      <FoundingStory />
       <FAQ />
       <Pricing />
-      <FinalCTA />
-      <SignupSection />
+      {/* Pre-launch build: one consistent ask — the waitlist (keeps the #signup anchor for all Start Free / Log In links) */}
+      <Waitlist id="signup" />
       <Footer />
+      <MobileStickyCTA />
     </div>
   );
 }

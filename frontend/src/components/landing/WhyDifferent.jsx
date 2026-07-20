@@ -1,6 +1,9 @@
 import React from 'react';
 import { Check, X } from 'lucide-react';
 import Reveal from './Reveal';
+import { DoodleAtom, DoodleBooks } from '../decor/StudyDoodles';
+import Emphasis from './Emphasis';
+import Mascot from '../decor/Mascot';
 
 const COMPARISON = [
   { them: 'Rereading notes until they blur together', us: 'Answering exam-style questions that stick' },
@@ -12,13 +15,15 @@ const COMPARISON = [
 
 export default function WhyDifferent() {
   return (
-    <section className="section-dark overflow-hidden">
-      <div className="max-w-[1280px] mx-auto px-6 py-28 lg:py-36 min-h-[80svh] flex flex-col justify-center">
+    <section className="relative section-dark overflow-hidden">
+      <div className="max-w-[1280px] mx-auto px-6 py-20 lg:py-28">
+        <div className="hidden lg:block absolute left-[3%] top-24"><DoodleAtom /></div>
+        <div className="hidden lg:block absolute right-[4%] bottom-24"><DoodleBooks width={100} /></div>
         <Reveal>
           <div className="text-center max-w-[860px] mx-auto">
             <div className="text-[11px] tracking-[0.14em] uppercase font-semibold text-blue-700 mb-5">Why InfinitySheets?</div>
             <h2 className="h-display text-slate-900 text-[44px] sm:text-[60px] lg:text-[72px] leading-[1.05]">
-              Real practice, real results.
+              Real practice, <Emphasis variant="highlight" amber>real results</Emphasis>.
             </h2>
             <p className="mt-7 text-[16.5px] sm:text-[18px] leading-relaxed text-slate-600 max-w-[720px] mx-auto">
               Practice sheets catered to your exact exam&mdash;the right boards, the right question
@@ -29,8 +34,12 @@ export default function WhyDifferent() {
           </div>
         </Reveal>
         <Reveal delay={0.15}>
-          <div className="mt-16 max-w-[920px] mx-auto w-full">
-            <div className="rounded-3xl border border-slate-200 bg-white/80 backdrop-blur overflow-hidden">
+          <div className="mt-16 max-w-[920px] mx-auto w-full relative">
+            {/* Sheety perched on the comparison table */}
+            <div className="hidden md:block absolute -top-[76px] right-10 z-10 pointer-events-none" aria-hidden="true">
+              <Mascot pose="sit" width={82} />
+            </div>
+            <div className="rounded-3xl liquid-glass overflow-hidden">
               <div className="grid grid-cols-2 border-b border-slate-200">
                 <div className="px-6 py-4 text-[13px] font-semibold text-slate-500 uppercase tracking-wider">Traditional studying</div>
                 <div className="px-6 py-4 text-[13px] font-semibold text-blue-700 uppercase tracking-wider border-l border-slate-200">InfinitySheets</div>
@@ -38,36 +47,24 @@ export default function WhyDifferent() {
               {COMPARISON.map((row, i) => (
                 <div key={i} className={`grid grid-cols-2 ${i > 0 ? 'border-t border-slate-100' : ''}`}>
                   <div className="px-6 py-4 flex items-start gap-3">
-                    <X className="w-5 h-5 mt-0.5 shrink-0 text-slate-400" />
+                    <X className="w-4 h-4 mt-0.5 shrink-0 text-slate-500" />
                     <span className="text-[14px] text-slate-500 leading-snug">{row.them}</span>
                   </div>
                   <div className="px-6 py-4 flex items-start gap-3 border-l border-slate-100">
-                    <Check className="w-5 h-5 mt-0.5 shrink-0 text-emerald-600" strokeWidth={2.6} />
+                    <Check className="w-4 h-4 mt-0.5 shrink-0 text-emerald-600" strokeWidth={2.6} />
                     <span className="text-[14px] text-slate-800 leading-snug">{row.us}</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-        </Reveal>
-        <Reveal delay={0.25}>
-          <div className="mt-14 grid grid-cols-2 lg:grid-cols-4 gap-3 max-w-[920px] mx-auto w-full">
-            <Mini label="Adaptive" value="to your level" />
-            <Mini label="Personalized" value="to your weak spots" />
-            <Mini label="Instant" value="feedback & marking" />
-            <Mini label="Free" value="every feature, no paywall" />
-          </div>
+          <p className="mt-6 text-[12.5px] text-slate-500 italic text-center max-w-[720px] mx-auto">
+            Active recall, spaced repetition, and instant feedback are among the most-replicated
+            findings in cognitive science and learning research&mdash;that loop is exactly what
+            InfinitySheets automates.
+          </p>
         </Reveal>
       </div>
     </section>
-  );
-}
-
-function Mini({ label, value }) {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white/70 px-4 py-3">
-      <div className="text-[10px] tracking-[0.14em] uppercase font-semibold text-slate-500">{label}</div>
-      <div className="text-[14px] text-slate-800 mt-1">{value}</div>
-    </div>
   );
 }

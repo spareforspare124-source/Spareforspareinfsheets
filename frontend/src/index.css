@@ -71,6 +71,9 @@ html, body {
     line-height: 1.02;
     color: var(--color-text);
 }
+/* Tailwind text color utilities must win over the h-display base color,
+   otherwise headings on dark sections render dark-on-dark. */
+.h-display.text-white { color: #fff; }
 
 .btn-violet {
     background: var(--color-primary);
@@ -124,15 +127,19 @@ html, body {
     background: var(--color-bg);
 }
 
+/* Formerly a navy block; in light mode it is now a soft off-white band
+   (layered shades of white + hairline borders give the depth instead of
+   a dark patch). Dark mode still renders it near-black via the html.dark
+   override below, so the light/dark structure stays identical. */
 .section-dark {
-    background: var(--color-bg);
+    background:
+        radial-gradient(1200px 400px at 50% 0%, rgba(59, 130, 246, 0.05), transparent 70%),
+        linear-gradient(180deg, #ffffff 0%, #f7f9fc 45%, #eef2f8 100%);
     color: var(--color-text);
+    border-top: 1px solid #e9eef5;
+    border-bottom: 1px solid #e9eef5;
+    box-shadow: inset 0 1px 0 #ffffff;
 }
-
-/* Theme-aware dashboard screenshots in Hero */
-.shot-dark { display: none; }
-html.dark .shot-light { display: none; }
-html.dark .shot-dark { display: block; }
 
 .text-muted-2 { color: var(--color-text-2); }
 .text-dark-slate { color: var(--color-text); }
@@ -309,7 +316,7 @@ html.dark .text-emerald-700 { color: #6ee7b7 !important; }
 
 html.dark .section-light { background: var(--color-bg-2) !important; }
 html.dark .section-bg { background: var(--color-bg) !important; }
-html.dark .section-dark { background: #050505 !important; }
+html.dark .section-dark { background: #050505 !important; border-color: var(--color-border) !important; box-shadow: none !important; }
 
 html.dark .card-soft { background: var(--color-card); border-color: var(--color-border); }
 html.dark .card-soft:hover { border-color: #404040; }
@@ -343,10 +350,28 @@ html.dark .border-red-200 { border-color: var(--color-border) !important; }
 
 html.dark .bg-white\/85,
 html.dark .bg-white\/80,
+html.dark .bg-white\/70,
 html.dark .bg-white\/15,
 html.dark .bg-white\/12 { background-color: rgba(23, 23, 23, 0.85) !important; }
 
-html.dark .bg-slate-50\/60 { background-color: var(--color-bg-2) !important; }
+html.dark .bg-blue-50\/50 { background-color: rgba(37, 99, 235, 0.10) !important; }
+html.dark .bg-blue-50\/70 { background-color: rgba(37, 99, 235, 0.12) !important; }
+html.dark .bg-white\/60,
+html.dark .bg-white\/50 { background-color: rgba(23, 23, 23, 0.6) !important; }
+html.dark .bg-slate-50\/70 { background-color: var(--color-bg-2) !important; }
+html.dark .border-blue-100 { border-color: rgba(59, 130, 246, 0.3) !important; }
+
+/* Step/feature demo vignettes: muted fills that adapt to theme */
+:root { --demo-muted: #e2e8f0; --demo-tint: #eff6ff; }
+html.dark { --demo-muted: #334155; --demo-tint: rgba(59, 130, 246, 0.16); }
+html.dark .bg-amber-50 { background-color: rgba(245, 158, 11, 0.12) !important; }
+html.dark .border-amber-200 { border-color: rgba(245, 158, 11, 0.35) !important; }
+html.dark .text-amber-800 { color: #fcd34d !important; }
+html.dark .text-amber-600 { color: #fbbf24 !important; }
+
+html.dark .bg-slate-50\/60,
+html.dark .bg-slate-50\/50,
+html.dark .bg-slate-50\/40 { background-color: var(--color-bg-2) !important; }
 html.dark .bg-slate-200\/70 { background-color: #262626 !important; }
 html.dark .bg-slate-100\/70 { background-color: #1f1f1f !important; }
 
@@ -366,6 +391,384 @@ html.dark .bg-rose-100   { color: #fda4af; background-color: rgba(244, 63, 94, 0
 /* mistake cards rose tint */
 html.dark .bg-rose-50\/40,
 html.dark .bg-rose-50\/30 { background-color: rgba(244, 63, 94, 0.10) !important; }
+
+/* ===== Liquid glass surfaces ===== */
+.liquid-glass {
+    background: rgba(255, 255, 255, 0.55);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    backdrop-filter: blur(18px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    box-shadow: 0 8px 32px -12px rgba(15, 23, 42, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+html.dark .liquid-glass {
+    background: rgba(23, 23, 23, 0.55);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+/* Clear glass: frosted but untinted — the section background shows through. */
+.liquid-glass-clear {
+    background: rgba(255, 255, 255, 0.12);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    box-shadow: 0 8px 32px -14px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+html.dark .liquid-glass-clear {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.10);
+    box-shadow: 0 8px 32px -14px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+/* Clear glass over always-dark sections */
+.liquid-glass-clear-dark {
+    background: rgba(255, 255, 255, 0.05);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Glass over dark sections (always dark, both themes) */
+.liquid-glass-dark {
+    background: rgba(15, 23, 42, 0.45);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    backdrop-filter: blur(18px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+/* ===== Step demo vignettes (animated "gifs") ===== */
+@keyframes demo-cursor-click {
+    0%, 100% { transform: translate(46px, -30px); }
+    38% { transform: translate(0, 0); }
+    46% { transform: translate(0, 0) scale(0.82); }
+    54% { transform: translate(0, 0) scale(1); }
+    70% { transform: translate(0, 0); }
+}
+.demo-cursor { animation: demo-cursor-click 3s ease-in-out infinite; transform-origin: top left; }
+@keyframes demo-press {
+    0%, 40%, 60%, 100% { transform: scale(1); }
+    47%, 53% { transform: scale(0.96); filter: brightness(1.15); }
+}
+.demo-press { animation: demo-press 3s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+@keyframes demo-scan-x {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(120px); }
+}
+.demo-scan { animation: demo-scan-x 2.6s ease-in-out infinite; }
+@keyframes demo-grow-bar {
+    0%, 15% { transform: scaleX(0.15); }
+    70%, 100% { transform: scaleX(1); }
+}
+.demo-bar { animation: demo-grow-bar 2.8s ease-out infinite; transform-origin: left center; transform-box: fill-box; }
+@keyframes demo-slide-in {
+    0%, 10% { transform: translateY(16px); opacity: 0; }
+    35%, 80% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(0); opacity: 0; }
+}
+.demo-slide { animation: demo-slide-in 3.2s ease-in-out infinite; }
+@keyframes demo-draw {
+    0%, 8% { stroke-dashoffset: 300; }
+    75%, 100% { stroke-dashoffset: 0; }
+}
+.demo-draw { stroke-dasharray: 300; animation: demo-draw 3.2s ease-in-out infinite; }
+@keyframes demo-pop-in {
+    0%, 20% { transform: scale(0); opacity: 0; }
+    38% { transform: scale(1.15); opacity: 1; }
+    48%, 85% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1); opacity: 0; }
+}
+.demo-pop { animation: demo-pop-in 3.2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+
+/* Feature card hover-expand demo area */
+.feature-demo {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease, margin 0.5s ease;
+    margin-bottom: 0;
+}
+.feature-card:hover .feature-demo,
+.feature-card:focus-within .feature-demo,
+.feature-card.demo-open .feature-demo {
+    max-height: 150px;
+    opacity: 1;
+    margin-bottom: 14px;
+}
+
+/* ===== 2D conveyor-belt feature carousel (hero) =====
+   The card list is rendered twice; the track slides to -50% and loops,
+   so the belt scrolls forever with no visible seam. Deliberately no
+   hover pause. Edges fade out via mask. */
+.carousel-belt {
+    overflow: hidden;
+    max-width: 100%;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+.carousel-belt-track {
+    display: flex;
+    gap: 16px;
+    width: max-content;
+    animation: belt-scroll 45s linear infinite;
+    will-change: transform;
+}
+@keyframes belt-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(calc(-50% - 8px)); } /* half the doubled list + half a gap */
+}
+.carousel-belt-card {
+    flex: 0 0 auto;
+    width: 250px;
+}
+.carousel-belt-card .feature-demo svg {
+    max-height: 96px;
+}
+@media (prefers-reduced-motion: reduce) {
+    .carousel-belt-track { animation: none; }
+}
+
+/* Hints that only make sense with a mouse */
+@media (hover: none) {
+    .hover-hint { display: none; }
+}
+
+/* Expressive display moment: the highlighted word goes serif-italic */
+.hl-serif {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    letter-spacing: -0.01em;
+}
+
+/* ===== Mascot (Sheety) ===== */
+.mascot-glow { filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.8)); }
+@keyframes mascot-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-7px); }
+}
+.mascot-bob { animation: mascot-bob 3.6s ease-in-out infinite; }
+@keyframes mascot-wave {
+    0%, 100% { transform: rotate(0deg); }
+    30% { transform: rotate(-18deg); }
+    60% { transform: rotate(8deg); }
+}
+.mascot-wave-arm { transform-origin: 96px 76px; animation: mascot-wave 1.8s ease-in-out infinite; }
+@keyframes mascot-kick {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(6deg); }
+}
+.mascot-leg-l { transform-origin: 50px 96px; animation: mascot-kick 2.4s ease-in-out infinite; }
+.mascot-leg-r { transform-origin: 70px 96px; animation: mascot-kick 2.4s ease-in-out -1.2s infinite; }
+@keyframes mascot-sparkle {
+    0%, 100% { opacity: 0.35; }
+    50% { opacity: 1; }
+}
+.mascot-sparkle { animation: mascot-sparkle 2.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+    .mascot-bob, .mascot-wave-arm, .mascot-leg-l, .mascot-leg-r, .mascot-sparkle { animation: none; }
+}
+
+/* Screenshot tilt-on-hover (premium depth; JS sets the custom props) */
+.tilt-card {
+    transform: perspective(1100px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+    transition: transform 0.18s ease-out;
+    will-change: transform;
+}
+
+/* ===== 3D student-photo gallery (below the dashboard screenshot) =====
+   Rotation is driven from JS (StudentGallery3D rAF loop): continuous
+   auto-spin, paused on hover while arrow paging animates in 3D. */
+.gallery3d-stage {
+    display: none;
+    perspective: 1500px;
+    min-height: 300px;
+    align-items: center;
+    justify-content: center;
+}
+@media (min-width: 640px) {
+    .gallery3d-stage { display: flex; }
+}
+.gallery3d-mobile { display: flex; }
+@media (min-width: 640px) {
+    .gallery3d-mobile { display: none; }
+}
+.gallery3d-ring {
+    position: relative;
+    width: 250px;
+    height: 252px;
+    transform-style: preserve-3d;
+}
+.gallery3d-card .feature-demo svg {
+    max-height: 92px;
+}
+.gallery3d-card {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+    .gallery3d-ring { transform: rotateY(-15deg); }
+}
+
+/* Screenshot feature callouts */
+@keyframes callout-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.45); }
+    60% { box-shadow: 0 0 0 12px rgba(59, 130, 246, 0); }
+}
+.callout-dot { animation: callout-pulse 2.4s ease-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+    .demo-cursor, .demo-press, .demo-scan, .demo-bar, .demo-slide, .demo-draw, .demo-pop, .callout-dot { animation: none; }
+}
+
+/* Doodle students: theme-aware line-work */
+:root { --doodle-ink: #0f172a; --doodle-paper: #ffffff; }
+html.dark { --doodle-ink: #e2e8f0; --doodle-paper: #171717; }
+
+/* Hero screenshot: swap image with the active theme */
+html.dark .shot-light { display: none; }
+html:not(.dark) .shot-dark { display: none; }
+
+/* Doodle students: gentle float + twinkling sparkles */
+@keyframes doodle-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-7px); }
+}
+.doodle-float { animation: doodle-float 5.5s ease-in-out infinite; }
+@keyframes doodle-twinkle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.25; }
+}
+.doodle-twinkle { animation: doodle-twinkle 2.8s ease-in-out infinite; }
+
+/* Animated character parts */
+@keyframes doodle-bob {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-3px) rotate(-2deg); }
+}
+.doodle-bob { animation: doodle-bob 2.4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+
+@keyframes doodle-type {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+.doodle-type { animation: doodle-type 0.42s ease-in-out infinite; }
+.doodle-type-alt { animation: doodle-type 0.42s ease-in-out 0.21s infinite; }
+
+@keyframes doodle-wave {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(14deg); }
+}
+.doodle-wave { animation: doodle-wave 1.6s ease-in-out infinite; transform-origin: 20% 100%; transform-box: fill-box; }
+
+@keyframes doodle-wobble {
+    0%, 100% { transform: rotate(-1.6deg); }
+    50% { transform: rotate(1.6deg); }
+}
+.doodle-wobble { animation: doodle-wobble 3.2s ease-in-out infinite; transform-origin: 50% 100%; transform-box: fill-box; }
+
+@keyframes doodle-flip {
+    0%, 45%, 100% { transform: rotate(0deg); opacity: 1; }
+    60% { transform: rotate(-24deg); opacity: 0.6; }
+    75% { transform: rotate(0deg); opacity: 1; }
+}
+.doodle-flip { animation: doodle-flip 3.6s ease-in-out infinite; transform-origin: 0% 100%; transform-box: fill-box; }
+
+@keyframes doodle-pop {
+    0%, 20%, 100% { transform: scale(1); opacity: 1; }
+    10% { transform: scale(1.18); opacity: 1; }
+    55% { transform: scale(0.92); opacity: 0.55; }
+}
+.doodle-pop { animation: doodle-pop 3.4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+
+@media (prefers-reduced-motion: reduce) {
+    .doodle-float, .doodle-twinkle, .doodle-bob, .doodle-type, .doodle-type-alt,
+    .doodle-wave, .doodle-wobble, .doodle-flip, .doodle-pop { animation: none; }
+}
+
+/* Marker-highlight sweep (study vibe) */
+.hl-mark { position: relative; z-index: 0; display: inline-block; }
+.hl-mark::before {
+    content: '';
+    position: absolute;
+    inset: 12% -5% 6% -5%;
+    background: linear-gradient(100deg, rgba(253, 224, 71, 0.85), rgba(250, 204, 21, 0.65));
+    border-radius: 0.35em 0.5em 0.4em 0.45em;
+    transform: scaleX(0) rotate(-1deg);
+    transform-origin: left center;
+    z-index: -1;
+}
+.hl-mark.hl-on::before { animation: hl-sweep 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+@keyframes hl-sweep {
+    to { transform: scaleX(1) rotate(-1deg); }
+}
+html.dark .hl-mark::before {
+    background: linear-gradient(100deg, rgba(202, 138, 4, 0.75), rgba(161, 98, 7, 0.6));
+}
+/* Amber marker for text on always-dark sections (white text stays readable). */
+.hl-amber::before,
+html.dark .hl-amber::before {
+    background: linear-gradient(100deg, rgba(217, 119, 6, 0.92), rgba(180, 83, 9, 0.85)) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+    .hl-mark.hl-on::before { animation: none; transform: scaleX(1) rotate(-1deg); }
+}
+
+/* Hand-drawn underline that draws itself in when scrolled into view. */
+.u-mark { position: relative; white-space: nowrap; }
+.u-line {
+    position: absolute; left: -3%; bottom: -0.24em; width: 106%; height: 0.42em;
+    overflow: visible; pointer-events: none;
+}
+.u-line path {
+    fill: none; stroke: #2563eb; stroke-width: 2.4; stroke-linecap: round;
+    vector-effect: non-scaling-stroke; stroke-dasharray: 220; stroke-dashoffset: 220;
+}
+html.dark .u-line path { stroke: #60a5fa; }
+.u-mark.u-on .u-line path { animation: u-draw 0.75s 0.05s ease-out forwards; }
+@keyframes u-draw { to { stroke-dashoffset: 0; } }
+
+/* Hand-drawn circle that loops around a short phrase (e.g. a price). */
+.c-mark { position: relative; display: inline-block; }
+.c-ring {
+    position: absolute; left: -14%; top: -22%; width: 128%; height: 150%;
+    overflow: visible; pointer-events: none;
+}
+.c-ring path {
+    fill: none; stroke: #2563eb; stroke-width: 2.4; stroke-linecap: round;
+    vector-effect: non-scaling-stroke; stroke-dasharray: 360; stroke-dashoffset: 360;
+}
+html.dark .c-ring path { stroke: #60a5fa; }
+.c-mark.c-on .c-ring path { animation: c-draw 0.9s 0.1s ease-out forwards; }
+@keyframes c-draw { to { stroke-dashoffset: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .u-mark.u-on .u-line path, .c-mark.c-on .c-ring path { animation: none; stroke-dashoffset: 0; }
+}
+
+/* Typed-out heading caret */
+@keyframes caret-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.type-caret {
+    display: inline-block;
+    width: 3px;
+    height: 0.9em;
+    margin-left: 4px;
+    vertical-align: -0.08em;
+    background: currentColor;
+    animation: caret-blink 0.9s step-end infinite;
+}
+
+/* Subtle lift on hover for landing cards */
+.hover-lift {
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 30px -12px rgba(15, 23, 42, 0.18);
+}
+@media (prefers-reduced-motion: reduce) {
+    .hover-lift, .hover-lift:hover { transition: none; transform: none; }
+}
 
 .tut-highlight {
     position: relative;
