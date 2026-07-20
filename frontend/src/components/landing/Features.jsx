@@ -26,7 +26,7 @@ export default function Features() {
               <Reveal key={f.title} delay={(i % 3) * 0.08} y={20}>
                 <div className="card-soft p-6 h-full hover-lift">
                   <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-5 ${toneClass[f.tone] || toneClass.primary}`}>
-                    <Icon className="w-5 h-5" />
+                    <Icon className="w-6 h-6" />
                   </div>
                   <h3 className="text-[18px] font-semibold text-slate-900 mb-2">{f.title}</h3>
                   <p className="text-[14.5px] text-slate-600 leading-relaxed">{f.desc}</p>

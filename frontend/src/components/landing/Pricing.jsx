@@ -40,13 +40,13 @@ export default function Pricing() {
               <ul className="mt-6 flex flex-col gap-3">
                 {FEATURES.map((f) => (
                   <li key={f} className="flex items-start gap-2.5">
-                    <Check className="w-4 h-4 mt-0.5 text-emerald-600" strokeWidth={2.6} />
+                    <Check className="w-5 h-5 mt-0.5 text-emerald-600" strokeWidth={2.6} />
                     <span className="text-[14.5px] text-slate-700">{f}</span>
                   </li>
                 ))}
               </ul>
               <a href="#signup" className="mt-8 inline-flex items-center justify-center gap-2 w-full py-3 rounded-lg text-[15px] font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors">
-                Make the change <ArrowRight className="w-4 h-4" />
+                Make the change <ArrowRight className="w-5 h-5" />
               </a>
               <p className="mt-4 text-[12px] text-slate-500 text-center">Supported by ads, so it stays free for everyone.</p>
             </div>

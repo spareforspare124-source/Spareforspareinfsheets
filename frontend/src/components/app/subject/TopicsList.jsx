@@ -34,7 +34,7 @@ function TopicRow({ topic, stats, onLaunch }) {
             <div className={`h-full ${barColor}`} style={{ width: `${acc}%` }} />
           </div>
         )}
-        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
+        <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
       </div>
     </button>
   );
@@ -48,7 +48,7 @@ export default function TopicsList({ subject, tone, topics, stats, onLaunch }) {
     <div className="card-soft p-6" data-testid="topics-list">
       <div className="flex items-center gap-2 mb-4">
         <span className={`w-8 h-8 rounded-lg flex items-center justify-center ${toneToBadge[tone] || toneToBadge.primary}`}>
-          <BookOpen className="w-4 h-4" />
+          <BookOpen className="w-5 h-5" />
         </span>
         <h3 className="text-[16px] font-semibold text-slate-900">Topics in {subject}</h3>
       </div>

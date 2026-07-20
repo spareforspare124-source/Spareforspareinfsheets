@@ -95,7 +95,7 @@ function Toggle({ checked, onChange, label, hint, testid }) {
         aria-pressed={checked}
         className={`mt-0.5 w-10 h-6 rounded-full transition-colors relative shrink-0 ${checked ? 'bg-blue-600' : 'bg-slate-300'}`}
       >
-        <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${checked ? 'left-[18px]' : 'left-0.5'}`} />
+        <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-all ${checked ? 'left-[18px]' : 'left-0.5'}`} />
       </button>
       <div className="min-w-0">
         <div className="text-[13.5px] font-medium text-slate-900">{label}</div>
@@ -143,7 +143,7 @@ function AccountDetails({ user, updateProfile }) {
         data-testid="settings-save-account"
         className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13.5px] font-semibold text-white bg-blue-600 hover:opacity-95 disabled:opacity-40"
       >
-        <Save className="w-4 h-4" /> Save account details
+        <Save className="w-5 h-5" /> Save account details
       </button>
     </Section>
   );
@@ -184,7 +184,7 @@ function Preferences({ settings, updateSettings }) {
         data-testid="settings-save-prefs"
         className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13.5px] font-semibold text-white bg-blue-600 hover:opacity-95 disabled:opacity-40"
       >
-        <Save className="w-4 h-4" /> Save preferences
+        <Save className="w-5 h-5" /> Save preferences
       </button>
     </Section>
   );
@@ -201,14 +201,14 @@ function AccessibilitySection({ settings, updateSettings, theme, toggleTheme }) 
         <Toggle
           checked={settings.keyboardShortcuts !== false}
           onChange={(v) => { updateSettings({ keyboardShortcuts: v }); toast.success(v ? 'Keyboard shortcuts enabled' : 'Keyboard shortcuts disabled'); }}
-          label={<span className="inline-flex items-center gap-1.5"><Keyboard className="w-3.5 h-3.5 text-slate-600" /> Keyboard shortcuts on worksheets</span>}
+          label={<span className="inline-flex items-center gap-1.5"><Keyboard className="w-4 h-4 text-slate-600" /> Keyboard shortcuts on worksheets</span>}
           hint="Press A–D or 1–4 to pick an option, → to advance, ← to go back."
           testid="pref-keyboard"
         />
         <div className="flex items-center justify-between">
           <div className="min-w-0">
             <div className="text-[13.5px] font-medium text-slate-900 inline-flex items-center gap-1.5">
-              {theme === 'dark' ? <Moon className="w-3.5 h-3.5 text-slate-600" /> : <Sun className="w-3.5 h-3.5 text-slate-600" />} Theme
+              {theme === 'dark' ? <Moon className="w-4 h-4 text-slate-600" /> : <Sun className="w-4 h-4 text-slate-600" />} Theme
             </div>
             <div className="text-[12px] text-slate-500 mt-0.5">Currently {theme === 'dark' ? 'dark' : 'light'} mode.</div>
           </div>
@@ -250,7 +250,7 @@ function SetupSection({ user, settings, restartOnboarding }) {
         <ReadonlyRow label="Default difficulty" value={settings?.defaultDifficulty || 'Not set'} />
       </div>
       <div className="mt-4">
-        <div className="text-[10px] tracking-[0.14em] uppercase font-semibold text-slate-500 mb-2 inline-flex items-center gap-1.5"><BookOpen className="w-3 h-3" /> Subjects you picked</div>
+        <div className="text-[10px] tracking-[0.14em] uppercase font-semibold text-slate-500 mb-2 inline-flex items-center gap-1.5"><BookOpen className="w-4 h-4" /> Subjects you picked</div>
         {picked.length === 0 ? (
           <div className="text-[13px] text-slate-500 italic">You haven&apos;t picked any subjects yet.</div>
         ) : (
@@ -269,7 +269,7 @@ function SetupSection({ user, settings, restartOnboarding }) {
         data-testid="settings-redo-setup"
         className="mt-5 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13.5px] font-semibold text-white bg-blue-600 hover:opacity-95"
       >
-        <RotateCcw className="w-4 h-4" /> Redo setup
+        <RotateCcw className="w-5 h-5" /> Redo setup
       </button>
     </Section>
   );
@@ -280,7 +280,7 @@ function ReadonlyRow({ label, value, icon: Icon }) {
     <div>
       <div className="text-[10px] tracking-[0.14em] uppercase font-semibold text-slate-500 mb-1">{label}</div>
       <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-[13.5px] text-slate-800 inline-flex items-center gap-1.5">
-        {Icon && <Icon className="w-3.5 h-3.5 text-slate-500" />} {value}
+        {Icon && <Icon className="w-4 h-4 text-slate-500" />} {value}
       </div>
     </div>
   );
@@ -308,7 +308,7 @@ function DangerZone({ resetProgress, deleteAccount, restartTutorial }) {
           <div className="text-[12.5px] text-slate-500 mt-0.5 mb-3">Clear worksheets, scores, streak, and mistake history. Your account and courses stay.</div>
           {!confirmReset ? (
             <button onClick={() => setConfirmReset(true)} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md border border-amber-300 text-amber-800 text-[12.5px] font-semibold hover:bg-amber-50">
-              <RotateCcw className="w-3.5 h-3.5" /> Reset progress
+              <RotateCcw className="w-4 h-4" /> Reset progress
             </button>
           ) : (
             <div className="flex gap-2">
@@ -322,7 +322,7 @@ function DangerZone({ resetProgress, deleteAccount, restartTutorial }) {
           <div className="text-[12.5px] text-rose-600/80 mt-0.5 mb-3">Permanently remove this account, worksheets, courses, and settings from this device.</div>
           {!confirmDelete ? (
             <button onClick={() => setConfirmDelete(true)} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-white bg-rose-600 hover:bg-rose-700 text-[12.5px] font-semibold">
-              <Trash2 className="w-3.5 h-3.5" /> Delete account
+              <Trash2 className="w-4 h-4" /> Delete account
             </button>
           ) : (
             <div className="flex gap-2">

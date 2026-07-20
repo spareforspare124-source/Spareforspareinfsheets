@@ -55,7 +55,7 @@ export default function FAQ() {
                     aria-expanded={isOpen}
                   >
                     <span className="text-[15.5px] font-semibold text-slate-900">{f.q}</span>
-                    {isOpen ? <Minus className="w-4 h-4 shrink-0 text-slate-400" /> : <Plus className="w-4 h-4 shrink-0 text-slate-400" />}
+                    {isOpen ? <Minus className="w-5 h-5 shrink-0 text-slate-400" /> : <Plus className="w-5 h-5 shrink-0 text-slate-400" />}
                   </button>
                   {isOpen && (
                     <p className="px-6 pb-5 text-[14.5px] text-slate-600 leading-relaxed">{f.a}</p>

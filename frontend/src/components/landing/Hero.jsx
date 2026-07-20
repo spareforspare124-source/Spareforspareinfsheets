@@ -41,10 +41,10 @@ export default function Hero() {
           className="mt-9 flex flex-wrap items-center justify-center gap-3"
         >
           <a href="#signup" className="btn-violet inline-flex items-center gap-2 px-7 py-4 rounded-xl text-[16.5px] font-medium shadow-sm">
-            Start Free <ArrowRight className="w-5 h-5" />
+            Start Free <ArrowRight className="w-6 h-6" />
           </a>
           <button onClick={onDemo} className="inline-flex items-center gap-2 px-7 py-4 rounded-xl text-[16.5px] font-medium text-violet-700 bg-violet-50 border border-violet-200 hover:bg-violet-100 transition-colors">
-            <Eye className="w-5 h-5" /> Try without signing up
+            <Eye className="w-6 h-6" /> Try without signing up
           </button>
         </motion.div>
         <motion.div

@@ -47,7 +47,7 @@ export default function ResourcesPage({ embedded = false }) {
         <header className="sticky top-0 z-40 bg-white/85 backdrop-blur border-b border-[color:var(--color-border)]">
           <div className="max-w-[1280px] mx-auto px-6 h-[60px] flex items-center justify-between">
             <a href="#top" className="flex items-center gap-2 text-[14px] text-slate-600 hover:text-slate-900 transition-colors">
-              <ArrowLeft className="w-4 h-4" /> Back to InfinitySheets
+              <ArrowLeft className="w-5 h-5" /> Back to InfinitySheets
             </a>
             <div className="flex items-center gap-2">
               <button
@@ -55,7 +55,7 @@ export default function ResourcesPage({ embedded = false }) {
                 aria-label={state.theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
                 className="w-9 h-9 inline-flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors"
               >
-                {state.theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                {state.theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
               <a href="#signup" className="btn-violet px-4 py-2 rounded-lg text-[14px] font-medium shadow-sm">Start Free</a>
             </div>
@@ -105,7 +105,7 @@ export default function ResourcesPage({ embedded = false }) {
             <h2 className="h-display text-[28px] sm:text-[34px]">{track.name}</h2>
             {track.note && (
               <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 max-w-[640px]">
-                <Info className="w-4 h-4 mt-0.5 shrink-0 text-amber-600" />
+                <Info className="w-5 h-5 mt-0.5 shrink-0 text-amber-600" />
                 <p className="text-[13.5px] text-amber-800 leading-relaxed">{track.note}</p>
               </div>
             )}
@@ -114,7 +114,7 @@ export default function ResourcesPage({ embedded = false }) {
                 <div key={g.label}>
                   <div className="flex items-center gap-2 mb-4">
                     {/^official/i.test(g.label) || /KSEAB|Pareeksha|DGE|NTA|College Board|LSAC|IIT/i.test(g.label) ? (
-                      <BadgeCheck className="w-4 h-4 text-emerald-600" />
+                      <BadgeCheck className="w-5 h-5 text-emerald-600" />
                     ) : null}
                     <h3 className="text-[13px] tracking-[0.12em] uppercase font-semibold text-slate-500">{g.label}</h3>
                   </div>
@@ -129,7 +129,7 @@ export default function ResourcesPage({ embedded = false }) {
                       >
                         <div className="flex items-start justify-between gap-3">
                           <span className="text-[14.5px] font-semibold text-slate-900 leading-snug">{l.title}</span>
-                          <ExternalLink className="w-3.5 h-3.5 mt-1 shrink-0 text-slate-300 group-hover:text-blue-500 transition-colors" />
+                          <ExternalLink className="w-4 h-4 mt-1 shrink-0 text-slate-300 group-hover:text-blue-500 transition-colors" />
                         </div>
                         <p className="text-[13px] text-slate-500 leading-relaxed">{l.desc}</p>
                       </a>

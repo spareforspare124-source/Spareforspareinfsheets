@@ -21,7 +21,7 @@ function TopicRow({ topic, subjectEntry }) {
   return (
     <div className="flex items-start gap-3 rounded-lg border border-[color:var(--color-border)] bg-white p-3.5 hover:border-blue-300 hover:bg-blue-50/40 transition-colors">
       <span className="w-8 h-8 rounded-md bg-violet-100 text-violet-700 flex items-center justify-center shrink-0">
-        <BookOpen className="w-4 h-4" />
+        <BookOpen className="w-5 h-5" />
       </span>
       <div className="min-w-0">
         <div className="text-[13.5px] font-semibold text-slate-900">{topic}</div>
@@ -58,7 +58,7 @@ function SubjectBlock({ s, onStudy }) {
             onClick={() => onStudy(s.subject)}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[12.5px] font-semibold text-white bg-blue-600 hover:opacity-95 transition-opacity"
           >
-            Study <ArrowRight className="w-3.5 h-3.5" />
+            Study <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -105,7 +105,7 @@ export default function CourseOverview({ courseId, go }) {
       <div className="relative">
         <div className="flex items-center gap-2 mb-3">
           <button onClick={() => go && go('courses')} className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-slate-600 hover:text-slate-900 transition-colors">
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to My Courses
+            <ArrowLeft className="w-4 h-4" /> Back to My Courses
           </button>
         </div>
 
@@ -116,7 +116,7 @@ export default function CourseOverview({ courseId, go }) {
           <div className="relative p-7 lg:p-9">
             <div className="flex items-center gap-2 mb-3">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/15 backdrop-blur border border-white/20 text-[11px] tracking-[0.14em] uppercase font-semibold">
-                <GraduationCap className="w-3.5 h-3.5" /> {exam.name} · Course overview
+                <GraduationCap className="w-4 h-4" /> {exam.name} · Course overview
               </span>
             </div>
             <div className="text-[28px] font-semibold tracking-tight leading-tight">{course.name}</div>
@@ -128,13 +128,13 @@ export default function CourseOverview({ courseId, go }) {
                 onClick={() => { window.location.hash = '#worksheets'; }}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-slate-900 hover:bg-slate-100 transition-colors text-[13px] font-semibold"
               >
-                <FileText className="w-4 h-4 text-blue-700" /> Create a Worksheet
+                <FileText className="w-5 h-5 text-blue-700" /> Create a Worksheet
               </button>
               <button
                 onClick={() => { window.location.hash = '#study'; }}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-white/30 text-white hover:bg-white/10 transition-colors text-[13px] font-medium"
               >
-                <BookOpen className="w-4 h-4" /> Start Studying
+                <BookOpen className="w-5 h-5" /> Start Studying
               </button>
             </div>
           </div>

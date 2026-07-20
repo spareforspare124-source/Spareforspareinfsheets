@@ -12,7 +12,7 @@ export default function FreeResources() {
           <Reveal>
             <div>
               <div className="flex items-center gap-2 mb-5">
-                <Library className="w-4 h-4 text-blue-700" />
+                <Library className="w-5 h-5 text-blue-700" />
                 <span className="text-[11px] tracking-[0.14em] uppercase font-semibold text-blue-700">Free resource directory</span>
               </div>
               <h2 className="h-display text-slate-900 text-[46px] sm:text-[58px] lg:text-[66px] leading-[1.05]">
@@ -27,7 +27,7 @@ export default function FreeResources() {
                 href="#resources"
                 className="mt-8 inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[15.5px] font-medium transition-colors"
               >
-                Browse free resources <ArrowRight className="w-4 h-4" />
+                Browse free resources <ArrowRight className="w-5 h-5" />
               </a>
             </div>
           </Reveal>

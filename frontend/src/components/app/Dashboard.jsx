@@ -228,7 +228,7 @@ export default function Dashboard({ go }) {
           </div>
         </div>
         <div className="rounded-xl border border-[color:var(--color-border)] p-5 bg-white">
-          <div className="eyebrow-muted mb-3 flex items-center gap-1.5"><CalendarClock className="w-3.5 h-3.5 text-violet-600" /> Upcoming exams</div>
+          <div className="eyebrow-muted mb-3 flex items-center gap-1.5"><CalendarClock className="w-4 h-4 text-violet-600" /> Upcoming exams</div>
           {courseExams.length === 0 ? (
             <button onClick={() => go('courses')} className="text-[14px] text-blue-700 hover:text-blue-900 transition-colors">Add a course to set per-subject exam dates &rarr;</button>
           ) : (
@@ -255,7 +255,7 @@ export default function Dashboard({ go }) {
           <div className="flex items-center justify-between mb-3 gap-3">
             <div>
               <div className="eyebrow-muted flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                <Sparkles className="w-4 h-4 text-blue-600" />
                 Predicted grades
               </div>
               <div className="text-[12px] text-slate-500 mt-0.5">
@@ -289,7 +289,7 @@ export default function Dashboard({ go }) {
             <div className="text-[11px] text-slate-500 inline-flex items-center gap-1">
               {swIsCustom
                 ? <span className="px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 font-medium">Custom</span>
-                : <><Sparkles className="w-3 h-3 text-slate-400" />Adaptive</>}
+                : <><Sparkles className="w-4 h-4 text-slate-400" />Adaptive</>}
               <span className="tabular-nums">≥ {strengthMin}%</span>
             </div>
           </div>
@@ -314,7 +314,7 @@ export default function Dashboard({ go }) {
             <div className="text-[11px] text-slate-500 inline-flex items-center gap-1">
               {swIsCustom
                 ? <span className="px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 font-medium">Custom</span>
-                : <><Sparkles className="w-3 h-3 text-slate-400" />Adaptive</>}
+                : <><Sparkles className="w-4 h-4 text-slate-400" />Adaptive</>}
               <span className="tabular-nums">&lt; {weaknessMax}%</span>
             </div>
           </div>

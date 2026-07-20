@@ -129,13 +129,13 @@ export default function CustomCourseWizard({ onClose }) {
             </div>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center" aria-label="Close">
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-6 flex flex-col gap-5">
           <div className="rounded-xl border border-blue-100 bg-blue-50/60 px-4 py-3 flex items-start gap-2.5">
-            <Sparkles className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+            <Sparkles className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
             <div className="text-[12.5px] text-blue-900 leading-snug">
               Upload your lectures, PDFs, and past tests. We&apos;ll turn them into a course overview with topics and summaries.
               <span className="block text-blue-800/70 mt-0.5"><b>Placeholder:</b> the AI extraction pipeline isn&apos;t wired up yet, so topics and summaries are auto-generated from your filenames for now.</span>
@@ -182,7 +182,7 @@ export default function CustomCourseWizard({ onClose }) {
               className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-6 py-8 cursor-pointer transition-colors ${dragOver ? 'border-blue-500 bg-blue-50/60' : 'border-slate-300 hover:border-blue-400 hover:bg-slate-50/60'}`}
               data-testid="cc-dropzone"
             >
-              <Upload className="w-5 h-5 text-slate-500" />
+              <Upload className="w-6 h-6 text-slate-500" />
               <div className="text-[13px] text-slate-700 font-medium">Drop files here or click to browse</div>
               <div className="text-[11.5px] text-slate-500">PDF, DOCX, PPTX, TXT, MD, images — as many as you like.</div>
               <input
@@ -200,12 +200,12 @@ export default function CustomCourseWizard({ onClose }) {
                 {files.map((f, i) => (
                   <div key={`${f.name}-${i}`} className="flex items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <FileText className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                      <FileText className="w-4 h-4 text-slate-500 shrink-0" />
                       <span className="text-[12.5px] font-medium text-slate-800 truncate">{f.name}</span>
                       <span className="text-[11px] text-slate-500 shrink-0">{Math.max(1, Math.round((f.size || 0) / 1024))} KB</span>
                     </div>
                     <button onClick={() => removeFile(i)} className="w-7 h-7 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center shrink-0" aria-label="Remove file">
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 ))}
@@ -224,7 +224,7 @@ export default function CustomCourseWizard({ onClose }) {
               data-testid="cc-submit"
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13.5px] font-semibold text-white bg-blue-600 hover:opacity-95 disabled:opacity-40"
             >
-              {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+              {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
               {busy ? 'Building course\u2026' : 'Create custom course'}
             </button>
           </div>

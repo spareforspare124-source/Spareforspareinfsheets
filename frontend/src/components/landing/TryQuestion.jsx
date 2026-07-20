@@ -65,7 +65,7 @@ export default function TryQuestion() {
                         <span className={`w-7 h-7 shrink-0 rounded-lg flex items-center justify-center text-[13px] font-semibold ${
                           showCorrect ? 'bg-emerald-500 text-white' : showWrong ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-600'
                         }`}>
-                          {showCorrect ? <Check className="w-4 h-4" /> : showWrong ? <X className="w-4 h-4" /> : o.key}
+                          {showCorrect ? <Check className="w-5 h-5" /> : showWrong ? <X className="w-5 h-5" /> : o.key}
                         </span>
                         {o.text}
                       </button>
@@ -88,10 +88,10 @@ export default function TryQuestion() {
                     </div>
                     <div className="mt-5 flex flex-wrap gap-3">
                       <button onClick={onDemo} className="btn-violet inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-[14px] font-medium">
-                        <Eye className="w-4 h-4" /> Keep practicing in the demo
+                        <Eye className="w-5 h-5" /> Keep practicing in the demo
                       </button>
                       <a href="#signup" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-[14px] font-medium border border-slate-300 hover:bg-slate-100 transition-colors">
-                        Start Free <ArrowRight className="w-4 h-4" />
+                        Start Free <ArrowRight className="w-5 h-5" />
                       </a>
                     </div>
                   </div>

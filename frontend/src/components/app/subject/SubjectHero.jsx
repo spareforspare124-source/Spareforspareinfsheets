@@ -47,14 +47,14 @@ export default function SubjectHero({ subject, info, examTrack, topicCount, subj
               data-testid="hero-create-worksheet"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-slate-900 hover:bg-slate-100 transition-colors text-[14px] font-semibold"
             >
-              <Sparkles className="w-4 h-4 text-blue-600" /> Create worksheet
+              <Sparkles className="w-5 h-5 text-blue-600" /> Create worksheet
             </button>
             <button
               onClick={onViewHistory}
               data-testid="hero-view-history"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/30 text-white hover:bg-white/10 transition-colors text-[14px] font-medium"
             >
-              <ListChecks className="w-4 h-4" /> View history
+              <ListChecks className="w-5 h-5" /> View history
             </button>
           </div>
         </div>

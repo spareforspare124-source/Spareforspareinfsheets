@@ -220,7 +220,7 @@ export default function Strengths() {
       <div className="rounded-xl border border-[color:var(--color-border)] bg-white p-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
-            <Filter className="w-4 h-4 text-slate-400 shrink-0" />
+            <Filter className="w-5 h-5 text-slate-400 shrink-0" />
             <span className="text-[12.5px] font-medium text-slate-500 shrink-0">Filter</span>
             <select
               value={subject}
@@ -280,7 +280,7 @@ export default function Strengths() {
               </span>
             ) : (
               <span className="inline-flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-slate-400" />
+                <Sparkles className="w-4 h-4 text-slate-400" />
                 Adapts to your <span className="tabular-nums font-medium text-slate-600">{avg}%</span>
                 {isSubjectMode ? <span className="ml-1 text-slate-500">{subject}</span> : null} average
               </span>
@@ -292,7 +292,7 @@ export default function Strengths() {
             className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-[color:var(--color-border)] bg-white px-2 py-1 text-[11.5px] font-medium text-slate-700 hover:border-slate-300 transition"
             aria-expanded={customizeOpen}
           >
-            <SlidersHorizontal className="w-3.5 h-3.5" />
+            <SlidersHorizontal className="w-4 h-4" />
             {customizeOpen ? 'Hide' : 'Customize'}
           </button>
         </div>
@@ -326,7 +326,7 @@ export default function Strengths() {
                 className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-[color:var(--color-border)] bg-white px-2.5 py-1.5 text-[12px] font-medium text-slate-700 hover:border-slate-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
                 title="Return to adaptive defaults"
               >
-                <RotateCcw className="w-3.5 h-3.5" /> Reset to defaults
+                <RotateCcw className="w-4 h-4" /> Reset to defaults
               </button>
             </div>
             <div className="mt-2 text-[11px] text-slate-500">

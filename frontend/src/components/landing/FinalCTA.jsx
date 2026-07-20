@@ -14,7 +14,7 @@ export default function FinalCTA() {
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <a href="#signup" className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[14.5px] font-medium transition-colors">
-                Start Free <ArrowRight className="w-4 h-4" />
+                Start Free <ArrowRight className="w-5 h-5" />
               </a>
               <a href="#features" className="inline-flex items-center px-5 py-3 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors text-[14.5px] font-medium">Explore features</a>
             </div>

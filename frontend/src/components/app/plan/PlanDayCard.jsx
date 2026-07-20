@@ -19,14 +19,14 @@ export default function PlanDayCard({ plan }) {
           </div>
         </div>
         <div className="hidden sm:flex items-center gap-1.5 text-[11.5px] text-slate-500">
-          <Calendar className="w-3.5 h-3.5" /> Day {plan.day}
+          <Calendar className="w-4 h-4" /> Day {plan.day}
         </div>
       </div>
       <ul className="mt-3 flex flex-col gap-1.5">
         {plan.items.map((it, idx) => (
           <li key={`${plan.day}-${it}`} className="flex items-start gap-2 text-[13px] text-slate-700">
-            <span className="shrink-0 w-5 h-5 rounded-md bg-violet-100 text-violet-700 flex items-center justify-center">
-              {idx === 0 ? <BookOpen className="w-3 h-3" /> : <Target className="w-3 h-3" />}
+            <span className="shrink-0 w-6 h-6 rounded-md bg-violet-100 text-violet-700 flex items-center justify-center">
+              {idx === 0 ? <BookOpen className="w-4 h-4" /> : <Target className="w-4 h-4" />}
             </span>
             <span>{it}</span>
           </li>

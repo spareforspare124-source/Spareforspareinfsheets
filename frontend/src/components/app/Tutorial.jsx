@@ -69,7 +69,7 @@ export default function Tutorial({ onDone }) {
         <div className="flex items-center justify-between mb-6">
           <div className="text-[12.5px] text-slate-500">Welcome, {state.user?.name || 'student'} · Quick tour</div>
           <button onClick={skip} className="inline-flex items-center gap-1.5 text-[13px] text-slate-500 hover:text-slate-800 transition-colors">
-            Skip tour <X className="w-3.5 h-3.5" />
+            Skip tour <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -83,7 +83,7 @@ export default function Tutorial({ onDone }) {
             <div className="p-8 lg:p-10">
               <div className="flex items-center gap-2 mb-5">
                 <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${tone.bg} ${tone.text}`}>
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-6 h-6" />
                 </div>
                 <div className="text-[10px] tracking-[0.16em] uppercase font-semibold text-slate-500">{step.eyebrow}</div>
               </div>
@@ -92,8 +92,8 @@ export default function Tutorial({ onDone }) {
               <ul className="mt-6 flex flex-col gap-2.5">
                 {step.bullets.map((b) => (
                   <li key={b} className="flex items-start gap-2.5">
-                    <span className={`shrink-0 w-5 h-5 rounded-full ${tone.bg} ${tone.text} flex items-center justify-center mt-0.5`}>
-                      <Check className="w-3 h-3" strokeWidth={3} />
+                    <span className={`shrink-0 w-6 h-6 rounded-full ${tone.bg} ${tone.text} flex items-center justify-center mt-0.5`}>
+                      <Check className="w-4 h-4" strokeWidth={3} />
                     </span>
                     <span className="text-[14px] text-slate-700">{b}</span>
                   </li>
@@ -120,11 +120,11 @@ export default function Tutorial({ onDone }) {
               )}
               {!isLast ? (
                 <button onClick={() => setI((v) => v + 1)} className="btn-violet inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13.5px] font-medium">
-                  Next <ChevronRight className="w-4 h-4" />
+                  Next <ChevronRight className="w-5 h-5" />
                 </button>
               ) : (
                 <button onClick={complete} className="btn-violet inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13.5px] font-medium">
-                  Get started <ArrowRight className="w-4 h-4" />
+                  Get started <ArrowRight className="w-5 h-5" />
                 </button>
               )}
             </div>
@@ -161,7 +161,7 @@ function Preview({ index }) {
               <div className="text-[13.5px] font-semibold text-slate-900">{c.n}</div>
               <div className="text-[12px] text-slate-500">{c.g}</div>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-400" />
+            <ChevronRight className="w-5 h-5 text-slate-400" />
           </div>
         ))}
       </div>
@@ -199,7 +199,7 @@ function Preview({ index }) {
     <div className="w-full max-w-[320px] rounded-xl border border-[color:var(--color-border)] bg-white p-5">
       <div className="text-[11px] tracking-[0.14em] uppercase font-semibold text-slate-500 mb-3">Recommended action</div>
       <div className="flex items-start gap-3">
-        <div className="w-9 h-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center"><Sparkles className="w-4 h-4" /></div>
+        <div className="w-9 h-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center"><Sparkles className="w-5 h-5" /></div>
         <div>
           <div className="text-[14px] font-semibold text-slate-900">Complete a 10-question Electrostatics worksheet.</div>
           <div className="text-[12px] text-slate-500 mt-1">Current accuracy 42% · Physics</div>

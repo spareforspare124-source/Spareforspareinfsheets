@@ -42,6 +42,26 @@ const HIDDEN_ROUTES = [
 ];
 
 const SIDEBAR_STORAGE_KEY = 'infinitysheets_sidebar_open';
+const MOBILE_QUERY = '(max-width: 767px)';
+
+function useIsMobile() {
+  const get = () => (typeof window !== 'undefined' ? window.matchMedia(MOBILE_QUERY).matches : false);
+  const [isMobile, setIsMobile] = useState(get);
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const mql = window.matchMedia(MOBILE_QUERY);
+    const onChange = (e) => setIsMobile(e.matches);
+    // Safari <14 support: addListener/removeListener fallback.
+    if (mql.addEventListener) mql.addEventListener('change', onChange);
+    else mql.addListener(onChange);
+    setIsMobile(mql.matches);
+    return () => {
+      if (mql.removeEventListener) mql.removeEventListener('change', onChange);
+      else mql.removeListener(onChange);
+    };
+  }, []);
+  return isMobile;
+}
 
 function parseHash(hash) {
   const raw = (hash || '').replace(/^#/, '');
@@ -83,7 +103,9 @@ export default function AppShell({ hash }) {
   const ALL_ITEMS = [...NAV, ...HIDDEN_ROUTES];
   const current = ALL_ITEMS.find((n) => n.key === active) || NAV[0];
 
-  // Sidebar collapse state — persisted so it survives refreshes.
+  // Sidebar collapse state — persisted so it survives refreshes on desktop.
+  // On mobile the sidebar starts closed and never persists.
+  const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     try {
       const v = localStorage.getItem(SIDEBAR_STORAGE_KEY);
@@ -92,9 +114,21 @@ export default function AppShell({ hash }) {
       return true;
     }
   });
+  // Whenever we cross the mobile / desktop breakpoint, snap to sensible defaults.
   useEffect(() => {
+    if (isMobile) setSidebarOpen(false);
+    else {
+      try {
+        const v = localStorage.getItem(SIDEBAR_STORAGE_KEY);
+        setSidebarOpen(v === null ? true : v === '1');
+      } catch (_) { setSidebarOpen(true); }
+    }
+  }, [isMobile]);
+  useEffect(() => {
+    // Only persist the desktop preference.
+    if (isMobile) return;
     try { localStorage.setItem(SIDEBAR_STORAGE_KEY, sidebarOpen ? '1' : '0'); } catch (_) {}
-  }, [sidebarOpen]);
+  }, [sidebarOpen, isMobile]);
 
   const go = (k) => {
     // For authenticated users, `resources` renders inside the shell so the
@@ -102,6 +136,9 @@ export default function AppShell({ hash }) {
     // anonymous users, App.js intercepts `#resources` and shows the
     // standalone landing ResourcesPage instead.
     window.location.hash = `#${k}`;
+    // Auto-close the drawer after a route change on mobile so the page
+    // becomes visible again.
+    if (isMobile) setSidebarOpen(false);
   };
   const isDark = state.theme === 'dark';
   const showOnboarding = !state.onboardingDone;
@@ -125,17 +162,30 @@ export default function AppShell({ hash }) {
   };
 
   return (
-    <div className="min-h-screen section-bg flex">
-      {/* Collapsible sidebar. When closed, its own left margin becomes
-          negative so it slides out to the left with a CSS transform on the
-          inner aside (the width stays the same, but the wrapper shrinks). */}
+    <div className="min-h-screen section-bg flex relative">
+      {/* Mobile scrim — dim the app when the drawer is open so the page
+          content becomes clearly "behind" the sidebar. */}
+      {isMobile && sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 z-30 bg-slate-900/50 backdrop-blur-sm transition-opacity"
+          aria-hidden="true"
+          data-testid="sidebar-scrim"
+        />
+      )}
+
+      {/* Sidebar. On desktop it participates in the flex row and animates its
+          own width. On mobile it becomes a fixed drawer that slides in from
+          the left over the content. */}
       <div
-        className={`shrink-0 py-2 pl-2 transition-[width,opacity,transform] duration-300 ease-out overflow-hidden ${
-          sidebarOpen ? 'w-[242px] opacity-100 translate-x-0' : 'w-0 opacity-0 -translate-x-4'
-        }`}
+        className={
+          isMobile
+            ? `fixed inset-y-0 left-0 z-40 w-[280px] py-2 pl-2 pr-1 transition-transform duration-300 ease-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
+            : `shrink-0 py-2 pl-2 transition-[width,opacity,transform] duration-300 ease-out overflow-hidden ${sidebarOpen ? 'w-[242px] opacity-100 translate-x-0' : 'w-0 opacity-0 -translate-x-4'}`
+        }
         aria-hidden={!sidebarOpen}
       >
-        <div className="w-[230px] h-[calc(100vh-16px)] sticky top-2">
+        <div className={isMobile ? 'w-full h-[calc(100vh-16px)]' : 'w-[230px] h-[calc(100vh-16px)] sticky top-2'}>
           <Sidebar
             nav={NAV}
             activeKey={current.key}
@@ -158,10 +208,10 @@ export default function AppShell({ hash }) {
           courseCount={(state.courses || []).length}
           onToggleTheme={toggleTheme}
           onNewWorksheet={() => go('worksheets')}
-          sidebarOpen={sidebarOpen}
+          sidebarOpen={sidebarOpen && !isMobile}
           onOpenSidebar={() => setSidebarOpen(true)}
         />
-        <div className="px-8 py-7 max-w-[1280px]">
+        <div className="px-4 sm:px-6 lg:px-8 py-5 sm:py-7 max-w-[1280px]">
           {renderRoute(current.key, params, go, isAdmin)}
         </div>
       </main>

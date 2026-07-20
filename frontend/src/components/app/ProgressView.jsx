@@ -224,7 +224,7 @@ export default function ProgressView() {
               </span>
             </div>
           </div>
-          <Sparkles className="w-4 h-4 text-blue-600" />
+          <Sparkles className="w-5 h-5 text-blue-600" />
         </div>
         {visibleSubjects.length === 0 ? (
           <div className="text-[13px] text-slate-500">No subjects visible.</div>
@@ -649,7 +649,7 @@ function DeltaPill({ delta, small = false }) {
   const sign = Up ? '+' : (Down ? '' : '±');
   return (
     <span className={`inline-flex items-center gap-1 px-${small ? '1.5' : '2'} py-0.5 rounded-md text-[${small ? '10.5' : '11.5'}px] font-semibold border ${cls}`}>
-      <Icon className={small ? 'w-3 h-3' : 'w-3.5 h-3.5'} />
+      <Icon className={small ? 'w-4 h-4' : 'w-4 h-4'} />
       <span>{sign}{Math.abs(delta).toFixed(0)} pp</span>
     </span>
   );

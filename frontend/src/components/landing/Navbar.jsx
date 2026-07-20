@@ -18,7 +18,7 @@ export default function Navbar({ onStart }) {
       <div className="max-w-[1280px] mx-auto px-6 h-[60px] flex items-center justify-between">
         <a href="#top" className="flex items-center gap-2 group">
           <span className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center group-hover:scale-105 transition-transform">
-            <Infinity className="w-5 h-5 text-white" strokeWidth={2.6} />
+            <Infinity className="w-6 h-6 text-white" strokeWidth={2.6} />
           </span>
           <span className="font-semibold text-[15px] tracking-tight text-slate-900">InfinitySheets</span>
         </a>
@@ -35,14 +35,14 @@ export default function Navbar({ onStart }) {
             aria-label={state.theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             className="w-9 h-9 inline-flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors"
           >
-            {state.theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            {state.theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
           <button onClick={tryDemo} className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13.5px] font-medium text-violet-700 border border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors">
-            <Eye className="w-3.5 h-3.5" /> Try Demo
+            <Eye className="w-4 h-4" /> Try Demo
           </button>
           <button onClick={onStart} className="btn-violet hidden md:inline-flex px-4 py-2 rounded-lg text-[14px] font-medium shadow-sm">Start Free</button>
           <button onClick={() => setOpen(!open)} className="md:hidden w-9 h-9 inline-flex items-center justify-center rounded-md hover:bg-slate-100">
-            {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </div>
@@ -55,7 +55,7 @@ export default function Navbar({ onStart }) {
             <a href="#signup" onClick={() => setOpen(false)} className="text-[14px] font-medium">Log In</a>
             <a href="#signup" onClick={() => setOpen(false)} className="text-[14px] font-medium">Sign Up</a>
             <button onClick={tryDemo} className="mt-1 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-[14px] font-medium text-violet-700 border border-violet-200 bg-violet-50">
-              <Eye className="w-3.5 h-3.5" /> Try Demo
+              <Eye className="w-4 h-4" /> Try Demo
             </button>
             <button onClick={onStart} className="btn-violet px-4 py-2 rounded-lg text-[14px] font-medium">Start Free</button>
           </div>

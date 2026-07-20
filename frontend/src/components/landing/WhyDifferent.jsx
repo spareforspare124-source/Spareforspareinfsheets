@@ -38,11 +38,11 @@ export default function WhyDifferent() {
               {COMPARISON.map((row, i) => (
                 <div key={i} className={`grid grid-cols-2 ${i > 0 ? 'border-t border-slate-100' : ''}`}>
                   <div className="px-6 py-4 flex items-start gap-3">
-                    <X className="w-4 h-4 mt-0.5 shrink-0 text-slate-400" />
+                    <X className="w-5 h-5 mt-0.5 shrink-0 text-slate-400" />
                     <span className="text-[14px] text-slate-500 leading-snug">{row.them}</span>
                   </div>
                   <div className="px-6 py-4 flex items-start gap-3 border-l border-slate-100">
-                    <Check className="w-4 h-4 mt-0.5 shrink-0 text-emerald-600" strokeWidth={2.6} />
+                    <Check className="w-5 h-5 mt-0.5 shrink-0 text-emerald-600" strokeWidth={2.6} />
                     <span className="text-[14px] text-slate-800 leading-snug">{row.us}</span>
                   </div>
                 </div>

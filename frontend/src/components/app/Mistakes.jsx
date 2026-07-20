@@ -41,8 +41,8 @@ export default function Mistakes() {
                 return (
                   <div key={`${m.id}-${i}`} className={`px-4 py-2.5 rounded-lg border text-[14px] flex items-center justify-between ${cls}`}>
                     <span><span className="inline-block w-6 text-slate-500 font-medium">{String.fromCharCode(65 + i)}.</span>{opt}</span>
-                    {shown && isCorrect && <Check className="w-4 h-4 text-emerald-600" />}
-                    {shown && isGiven && !isCorrect && <X className="w-4 h-4 text-rose-600" />}
+                    {shown && isCorrect && <Check className="w-5 h-5 text-emerald-600" />}
+                    {shown && isGiven && !isCorrect && <X className="w-5 h-5 text-rose-600" />}
                   </div>
                 );
               })}

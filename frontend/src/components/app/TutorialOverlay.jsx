@@ -114,7 +114,7 @@ export default function TutorialOverlay() {
       <div ref={wrapRef} className="fixed z-50 w-[400px] max-w-[92vw] animate-tut-in" style={{ top: pos.top, left: pos.left }}>
         <div className="relative">
           {/* arrow pointing left toward sidebar */}
-          <span className="hidden md:block absolute -left-2.5 top-7 w-5 h-5 rotate-45 bg-white border-l border-b border-[color:var(--color-border)]" />
+          <span className="hidden md:block absolute -left-2.5 top-7 w-6 h-6 rotate-45 bg-white border-l border-b border-[color:var(--color-border)]" />
           <div className="relative bg-white border border-[color:var(--color-border)] rounded-2xl overflow-hidden">
             <div className="h-1 w-full bg-slate-100">
               <div className="h-full bg-blue-500 transition-all duration-500" style={{ width: `${((i + 1) / STEPS.length) * 100}%` }} />
@@ -126,7 +126,7 @@ export default function TutorialOverlay() {
                   <div className="text-[18px] font-semibold tracking-tight text-slate-900 mt-1">{step.title}</div>
                 </div>
                 <button onClick={close} className="w-7 h-7 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition-colors" aria-label="Close tutorial">
-                  <X className="w-4 h-4" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
               <p className="text-[13.5px] text-slate-600 mt-2 leading-relaxed">{step.body}</p>
@@ -151,16 +151,16 @@ export default function TutorialOverlay() {
                 <button onClick={close} className="text-[12.5px] text-slate-500 hover:text-slate-800 transition-colors">Skip</button>
                 {i > 0 && (
                   <button onClick={back} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[12.5px] border border-[color:var(--color-border)] bg-white hover:bg-slate-100 text-slate-700 transition-colors">
-                    <ChevronLeft className="w-3.5 h-3.5" /> Back
+                    <ChevronLeft className="w-4 h-4" /> Back
                   </button>
                 )}
                 {!isLast ? (
                   <button onClick={next} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[12.5px] font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors">
-                    Next <ChevronRight className="w-3.5 h-3.5" />
+                    Next <ChevronRight className="w-4 h-4" />
                   </button>
                 ) : (
                   <button onClick={next} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[12.5px] font-medium bg-blue-600 text-white hover:opacity-95 transition-opacity">
-                    <Sparkles className="w-3.5 h-3.5" /> Finish tour
+                    <Sparkles className="w-4 h-4" /> Finish tour
                   </button>
                 )}
               </div>

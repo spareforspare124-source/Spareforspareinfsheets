@@ -48,7 +48,7 @@ export default function Recommendations({ go }) {
       {/* Threshold context banner */}
       <div className="rounded-xl border border-[color:var(--color-border)] bg-white px-4 py-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[12px] text-slate-600">
         <span className="inline-flex items-center gap-1.5 font-medium text-slate-700">
-          <TrendingDown className="w-3.5 h-3.5 text-rose-500" />
+          <TrendingDown className="w-4 h-4 text-rose-500" />
           Prioritizing your weakest topics
         </span>
         <span className="text-slate-400">·</span>
@@ -63,7 +63,7 @@ export default function Recommendations({ go }) {
         <span className="text-slate-400">
           {isCustom
             ? <span className="px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 text-[10.5px] font-medium">Custom thresholds</span>
-            : <span className="inline-flex items-center gap-1"><Sparkles className="w-3 h-3" />Adaptive</span>}
+            : <span className="inline-flex items-center gap-1"><Sparkles className="w-4 h-4" />Adaptive</span>}
         </span>
       </div>
 
@@ -87,7 +87,7 @@ export default function Recommendations({ go }) {
               onClick={() => { window.sessionStorage.setItem('preselect_subject', r.subject); go('worksheets'); }}
               className="btn-violet inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13.5px] font-medium"
             >
-              Start <ArrowRight className="w-4 h-4" />
+              Start <ArrowRight className="w-5 h-5" />
             </button>
           </div>
         );

@@ -65,7 +65,7 @@ export default function AdminPlaceholder() {
     <div className="max-w-[1200px]" data-testid="admin-placeholder">
       <div className="flex items-center gap-3 mb-5">
         <span className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center">
-          <Shield className="w-5 h-5" />
+          <Shield className="w-6 h-6" />
         </span>
         <div className="flex-1">
           <div className="text-[11px] tracking-[0.16em] uppercase font-semibold text-blue-600">Admin</div>
@@ -76,7 +76,7 @@ export default function AdminPlaceholder() {
           data-testid="admin-seed-performance"
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-[13.5px] font-semibold text-white bg-violet-600 hover:bg-violet-700 transition-colors shadow-sm"
         >
-          <FlaskConical className="w-4 h-4" />
+          <FlaskConical className="w-5 h-5" />
           Create test performance
         </button>
       </div>
@@ -310,7 +310,7 @@ function CategoryPanel({ syllabus, subject, pastPapers, addPastPaper, removePast
             data-testid="admin-add-question"
             className="mt-5 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-[14px] font-semibold text-white bg-blue-600 hover:opacity-95 disabled:opacity-50"
           >
-            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+            {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
             {busy ? 'Saving\u2026' : 'Add question'}
           </button>
         </div>
@@ -325,7 +325,7 @@ function CategoryPanel({ syllabus, subject, pastPapers, addPastPaper, removePast
             <div className="text-[12px] tracking-[0.16em] uppercase font-semibold text-blue-700">Past-paper library</div>
             <div className="text-[12.5px] text-slate-500">{syllabus} · {subject} · {scopedPastPapers.length} total{filterTopic ? ` · ${filteredPastPapers.length} shown` : ''}</div>
           </div>
-          <Filter className="w-4 h-4 text-slate-400" />
+          <Filter className="w-5 h-5 text-slate-400" />
         </div>
 
         <select className="input-base mb-4" value={filterTopic} onChange={(e) => setFilterTopic(e.target.value)}>
@@ -335,7 +335,7 @@ function CategoryPanel({ syllabus, subject, pastPapers, addPastPaper, removePast
 
         {filteredPastPapers.length === 0 ? (
           <div className="rounded-xl border border-dashed border-[color:var(--color-border)] p-8 text-center text-[13px] text-slate-500 bg-slate-50/50">
-            <FileText className="w-5 h-5 text-slate-400 mx-auto mb-2" />
+            <FileText className="w-6 h-6 text-slate-400 mx-auto mb-2" />
             {scopedPastPapers.length === 0 ? 'No past-paper questions in this category yet. Add one on the left, or bulk-import a PDF below.' : 'No questions match this filter.'}
           </div>
         ) : (
@@ -375,13 +375,13 @@ function LibraryRow({ p, onRemove }) {
           )}
           {p.answerType === 'Exam style' && (
             <div className="text-[12.5px] text-slate-600 mt-1 flex items-start gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
+              <Sparkles className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
               <span>Keywords: <span className="font-medium text-slate-800">{(p.examKeywords || []).join(', ') || '\u2014'}</span></span>
             </div>
           )}
           {p.link && (
             <a href={p.link} target="_blank" rel="noopener noreferrer" className="text-[12px] text-blue-700 hover:text-blue-900 mt-1.5 inline-flex items-center gap-1 max-w-full">
-              <Link2 className="w-3 h-3 shrink-0" />
+              <Link2 className="w-4 h-4 shrink-0" />
               <span className="truncate">{p.link}</span>
             </a>
           )}
@@ -394,7 +394,7 @@ function LibraryRow({ p, onRemove }) {
           className="w-8 h-8 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center shrink-0"
           aria-label="Remove"
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-5 h-5" />
         </button>
       </div>
     </div>
@@ -482,7 +482,7 @@ function BulkPdfUpload({ syllabus, subject, addPastPaper }) {
   return (
     <div className="rounded-2xl border border-[color:var(--color-border)] bg-white p-5" data-testid="admin-bulk-pdf">
       <div className="flex items-center justify-between mb-1">
-        <div className="text-[12px] tracking-[0.16em] uppercase font-semibold text-blue-700 inline-flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" /> Bulk PDF upload</div>
+        <div className="text-[12px] tracking-[0.16em] uppercase font-semibold text-blue-700 inline-flex items-center gap-1.5"><Sparkles className="w-4 h-4" /> Bulk PDF upload</div>
         <span className="text-[11px] font-semibold text-slate-500">{syllabus} · {subject}</span>
       </div>
       <p className="text-[12.5px] text-slate-500 mb-4">Upload a past-paper PDF and we&apos;ll use AI to extract questions. Review and save the ones you want.</p>
@@ -490,7 +490,7 @@ function BulkPdfUpload({ syllabus, subject, addPastPaper }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
         <Field label="PDF file">
           <label className="flex items-center gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50/50 px-3 py-2 cursor-pointer hover:bg-slate-100 transition-colors">
-            <Upload className="w-4 h-4 text-slate-500" />
+            <Upload className="w-5 h-5 text-slate-500" />
             <span className="text-[12.5px] text-slate-700 truncate flex-1">{file ? file.name : 'Choose a PDF\u2026'}</span>
             <input type="file" accept="application/pdf" onChange={(e) => setFile(e.target.files?.[0] || null)} className="hidden" data-testid="admin-pdf-file" />
           </label>
@@ -525,12 +525,12 @@ function BulkPdfUpload({ syllabus, subject, addPastPaper }) {
           data-testid="admin-extract-btn"
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13.5px] font-semibold text-white bg-blue-600 hover:opacity-95 disabled:opacity-50"
         >
-          {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+          {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
           {uploading ? (autosave ? 'Extracting & saving\u2026' : 'Extracting\u2026') : (autosave ? 'Extract & save all' : 'Extract questions')}
         </button>
         {(file || extracted.length > 0) && (
           <button onClick={clear} className="inline-flex items-center gap-1 text-[12.5px] font-medium text-slate-500 hover:text-slate-800">
-            <X className="w-3.5 h-3.5" /> Clear
+            <X className="w-4 h-4" /> Clear
           </button>
         )}
       </div>
@@ -545,7 +545,7 @@ function BulkPdfUpload({ syllabus, subject, addPastPaper }) {
               data-testid="admin-save-all"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12.5px] font-semibold text-white bg-emerald-600 hover:opacity-95 disabled:opacity-50"
             >
-              {savingAll ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+              {savingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
               {savingAll ? 'Saving\u2026' : 'Save all'}
             </button>
           </div>
@@ -571,7 +571,7 @@ function DraftRow({ draft, onChange, onRemove, subject }) {
           {draft.marks && <span className="px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 text-[10.5px] font-semibold">{draft.marks} marks</span>}
         </div>
         <button onClick={onRemove} className="w-6 h-6 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center shrink-0" aria-label="Discard">
-          <X className="w-3.5 h-3.5" />
+          <X className="w-4 h-4" />
         </button>
       </div>
       <textarea

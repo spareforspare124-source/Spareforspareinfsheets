@@ -51,7 +51,7 @@ export default function OnboardingFlow() {
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2">
             <span className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white">
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="w-5 h-5" />
             </span>
             <div className="leading-tight">
               <div className="text-[13px] font-semibold text-slate-900">Quick setup</div>
@@ -59,7 +59,7 @@ export default function OnboardingFlow() {
             </div>
           </div>
           <button onClick={skipAll} className="text-[12.5px] text-slate-500 hover:text-slate-800 transition-colors inline-flex items-center gap-1">
-            Skip <X className="w-3.5 h-3.5" />
+            Skip <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -69,7 +69,7 @@ export default function OnboardingFlow() {
             <React.Fragment key={label}>
               <div className="flex items-center gap-2">
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-semibold transition-colors ${i < step ? 'bg-emerald-500 text-white' : i === step ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>
-                  {i < step ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
+                  {i < step ? <CheckCircle2 className="w-5 h-5" /> : i + 1}
                 </div>
                 <span className={`text-[12.5px] font-medium ${i === step ? 'text-slate-900' : 'text-slate-500'}`}>{label}</span>
               </div>
@@ -88,7 +88,7 @@ export default function OnboardingFlow() {
           {step === 0 && (
             <div className="p-6 lg:p-8">
               <div className="flex items-center gap-2 mb-2">
-                <GraduationCap className="w-4 h-4 text-blue-600" />
+                <GraduationCap className="w-5 h-5 text-blue-600" />
                 <span className="text-[11px] tracking-[0.16em] uppercase font-semibold text-blue-600">Step 1</span>
               </div>
               <h2 className="text-[26px] font-semibold tracking-tight text-slate-900">Which exam are you preparing for?</h2>
@@ -104,7 +104,7 @@ export default function OnboardingFlow() {
                           <div className={`text-[13.5px] font-semibold ${sel ? 'text-blue-700' : 'text-slate-900'}`}>{t.name}</div>
                           <div className="text-[12px] text-slate-500 mt-0.5 leading-snug">{t.title}</div>
                         </div>
-                        {sel && <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />}
+                        {sel && <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0" />}
                       </div>
                     </button>
                   );
@@ -116,7 +116,7 @@ export default function OnboardingFlow() {
           {step === 1 && (
             <div className="p-6 lg:p-8">
               <div className="flex items-center gap-2 mb-2">
-                <Calendar className="w-4 h-4 text-violet-600" />
+                <Calendar className="w-5 h-5 text-violet-600" />
                 <span className="text-[11px] tracking-[0.16em] uppercase font-semibold text-violet-700">Step 2</span>
               </div>
               <h2 className="text-[26px] font-semibold tracking-tight text-slate-900">When is your exam?</h2>
@@ -154,7 +154,7 @@ export default function OnboardingFlow() {
           {step === 2 && (
             <div className="p-6 lg:p-8">
               <div className="flex items-center gap-2 mb-2">
-                <BookOpen className="w-4 h-4 text-red-600" />
+                <BookOpen className="w-5 h-5 text-red-600" />
                 <span className="text-[11px] tracking-[0.16em] uppercase font-semibold text-red-700">Step 3</span>
               </div>
               <h2 className="text-[26px] font-semibold tracking-tight text-slate-900">Which subjects are you studying?</h2>
@@ -183,7 +183,7 @@ export default function OnboardingFlow() {
                             <span className={`text-[13.5px] font-semibold ${sel ? 'text-blue-700' : 'text-slate-900'}`}>{s}</span>
                           </div>
                         </div>
-                        {sel && <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />}
+                        {sel && <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0" />}
                       </div>
                     </button>
                   );
@@ -198,11 +198,11 @@ export default function OnboardingFlow() {
             <div className="flex items-center gap-2">
               {step > 0 && (
                 <button onClick={back} className="inline-flex items-center gap-1 px-3.5 py-2 rounded-lg text-[13px] font-medium border border-[color:var(--color-border)] bg-white hover:bg-slate-100 text-slate-700 transition-colors">
-                  <ArrowLeft className="w-4 h-4" /> Back
+                  <ArrowLeft className="w-5 h-5" /> Back
                 </button>
               )}
               <button onClick={next} className="inline-flex items-center gap-1 px-4 py-2 rounded-lg text-[13px] font-semibold text-white bg-blue-600 hover:opacity-95 transition-opacity">
-                {step === 2 ? (<><Sparkles className="w-4 h-4" /> Finish setup</>) : (<>Continue <ArrowRight className="w-4 h-4" /></>)}
+                {step === 2 ? (<><Sparkles className="w-5 h-5" /> Finish setup</>) : (<>Continue <ArrowRight className="w-5 h-5" /></>)}
               </button>
             </div>
           </div>

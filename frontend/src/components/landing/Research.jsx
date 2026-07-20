@@ -8,7 +8,7 @@ export default function Research() {
       <div className="max-w-[1280px] mx-auto px-6 py-24 lg:py-28">
         <div className="max-w-[760px]">
           <div className="flex items-center gap-2 mb-5">
-            <BookMarked className="w-4 h-4 text-violet-600" />
+            <BookMarked className="w-5 h-5 text-violet-600" />
             <span className="text-[11px] tracking-[0.14em] uppercase font-semibold text-violet-700">Backed by research</span>
           </div>
           <h2 className="h-display text-[44px] sm:text-[54px] lg:text-[62px]">Methods that move the needle.</h2>

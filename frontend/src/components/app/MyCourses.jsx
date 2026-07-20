@@ -58,7 +58,7 @@ function CourseCard({ course, onRemove, onUpdate }) {
           <div className="text-[12px] text-slate-500 mt-0.5">{c.subjects.length} subject{c.subjects.length === 1 ? '' : 's'}</div>
         </div>
         <button onClick={() => { onRemove(c.id); toast.success('Course removed'); }} className="w-8 h-8 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors" aria-label="Remove course">
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-5 h-5" />
         </button>
       </div>
       <div className="mt-3 flex flex-col gap-1.5">
@@ -74,7 +74,7 @@ function CourseCard({ course, onRemove, onUpdate }) {
           className="inline-flex items-center gap-1 text-[12px] font-semibold text-blue-700 hover:text-blue-900 transition-colors"
           data-testid="view-course-overview"
         >
-          View overview <ArrowRight className="w-3.5 h-3.5" />
+          View overview <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     </div>
@@ -93,11 +93,11 @@ function EmptyState({ onAdd, onAddCustom }) {
         <p className="text-[13.5px] text-slate-500 mt-1 max-w-[420px] mx-auto">Pick a syllabus (CBSE, IB, SAT…) or bring your own material to build a custom course.</p>
         <div className="mt-6 flex items-center justify-center gap-2 flex-wrap">
           <button onClick={onAdd} className="btn-violet inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13.5px] font-medium">
-            <Plus className="w-4 h-4" /> Add your first course
+            <Plus className="w-5 h-5" /> Add your first course
           </button>
           {onAddCustom && (
             <button onClick={onAddCustom} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13.5px] font-semibold border border-blue-300 text-blue-800 bg-white hover:bg-blue-50">
-              <Sparkles className="w-4 h-4" /> + Custom Course
+              <Sparkles className="w-5 h-5" /> + Custom Course
             </button>
           )}
         </div>
@@ -118,10 +118,10 @@ export default function MyCourses() {
         <p className="text-[14px] text-slate-500">Each course can contain multiple subjects, and every subject has its own exam date.</p>
         <div className="flex items-center gap-2">
           <button onClick={() => setCustomOpen(true)} data-testid="add-custom-course" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[14px] font-semibold border border-blue-300 text-blue-800 bg-white hover:bg-blue-50 transition-colors">
-            <Sparkles className="w-4 h-4" /> + Custom Course
+            <Sparkles className="w-5 h-5" /> + Custom Course
           </button>
           <button onClick={() => setOpen(true)} className="btn-violet inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[14px] font-medium">
-            <Plus className="w-4 h-4" /> Add course
+            <Plus className="w-5 h-5" /> Add course
           </button>
         </div>
       </div>

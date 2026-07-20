@@ -13,14 +13,14 @@ function ActionButtons() {
         data-testid="history-new-worksheet-btn"
         className="btn-violet inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-semibold"
       >
-        <Sparkles className="w-4 h-4" /> Create new worksheet
+        <Sparkles className="w-5 h-5" /> Create new worksheet
       </button>
       <button
         onClick={() => { window.location.hash = '#mistakes'; }}
         data-testid="mistake-history-btn"
         className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-semibold text-white bg-blue-600 hover:opacity-95 transition-opacity"
       >
-        <AlertTriangle className="w-4 h-4" /> Mistake History
+        <AlertTriangle className="w-5 h-5" /> Mistake History
       </button>
     </div>
   );
