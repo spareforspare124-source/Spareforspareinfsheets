@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { SUBJECTS, TOPICS, QUESTION_BANK, FALLBACK_QUESTIONS, EXAM_DURATIONS } from '../../data/mock';
-import { Check, X, Clock, ChevronLeft, ChevronRight, Sparkles, FileText, AlertCircle } from 'lucide-react';
+import { Check, X, Clock, ChevronLeft, ChevronRight, Sparkles, FileText, AlertCircle, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import jsPDF from 'jspdf';
 
 const ANSWER_TYPES = ['Multiple choice', 'Typed response', 'Exam style'];
 const DIFFICULTIES = ['Easy', 'Medium', 'Exam level', 'Hard'];
@@ -116,6 +117,230 @@ function fmtDuration(min) {
   const h = Math.floor(min / 60);
   const m = min % 60;
   return m === 0 ? `${h} hr` : `${h} hr ${m} min`;
+}
+
+/* ================== PDF export ================== */
+
+// Build a printable PDF from a set of questions produced by `buildQuestions`.
+// The PDF has a cover header with metadata, then each question with either
+// A/B/C/D options (MCQ), a single blank line (typed response), or a lined
+// answer box (exam style). An answer key page is appended at the end so
+// students can self-mark once they're done.
+
+// jsPDF's default Helvetica is single-byte (WinAnsi) — characters outside
+// that range are rendered as boxes or spaced-out glyphs. Rewrite common
+// math/typographic characters to ASCII so the printout stays readable.
+function sanitizeForPDF(s) {
+  if (s === null || s === undefined) return '';
+  return String(s)
+    // Superscripts / subscripts.
+    .replace(/\u00b2/g, '^2')
+    .replace(/\u00b3/g, '^3')
+    .replace(/\u2070/g, '^0')
+    .replace(/\u00b9/g, '^1')
+    .replace(/[\u2074-\u2079]/g, (c) => `^${c.charCodeAt(0) - 0x2070}`)
+    .replace(/[\u2080-\u2089]/g, (c) => `_${c.charCodeAt(0) - 0x2080}`)
+    // Dashes and minus.
+    .replace(/[\u2010\u2011\u2012\u2013\u2014\u2212]/g, '-')
+    // Quotes and apostrophes.
+    .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
+    .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
+    // Multiplication / division / plus-minus / degree / ellipsis / bullet.
+    .replace(/\u00d7/g, 'x')
+    .replace(/\u00f7/g, '/')
+    .replace(/\u00b1/g, '+/-')
+    .replace(/\u00b0/g, ' deg')
+    .replace(/\u2026/g, '...')
+    .replace(/[\u2022\u25cf]/g, '*')
+    // Middle dot / non-breaking space.
+    .replace(/\u00b7/g, '.')
+    .replace(/\u00a0/g, ' ')
+    // Arrows / infinity — spell them out when possible.
+    .replace(/\u2192/g, '->')
+    .replace(/\u2190/g, '<-')
+    .replace(/\u21d2/g, '=>')
+    .replace(/\u221e/g, 'inf')
+    // Fractions.
+    .replace(/\u00bd/g, '1/2')
+    .replace(/\u00bc/g, '1/4')
+    .replace(/\u00be/g, '3/4')
+    // Anything else non-latin1: strip.
+    .replace(/[^\x20-\x7e\n\r\t]/g, '');
+}
+
+function downloadWorksheetPDF({ questions, subject, topics, difficulty, answerType, duration, studentName }) {
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const marginX = 48;
+  const marginTop = 56;
+  const marginBottom = 60;
+  const contentWidth = pageWidth - marginX * 2;
+  let y = marginTop;
+
+  const ensureRoom = (needed) => {
+    if (y + needed > pageHeight - marginBottom) {
+      doc.addPage();
+      y = marginTop;
+    }
+  };
+
+  const writeWrapped = (text, opts = {}) => {
+    const {
+      size = 11,
+      style = 'normal',
+      lineHeight = 1.35,
+      indent = 0,
+      color = [15, 23, 42],
+      after = 6,
+    } = opts;
+    doc.setFont('helvetica', style);
+    doc.setFontSize(size);
+    doc.setTextColor(color[0], color[1], color[2]);
+    const clean = sanitizeForPDF(text);
+    const lines = doc.splitTextToSize(clean, contentWidth - indent);
+    const lh = size * lineHeight;
+    lines.forEach((line) => {
+      ensureRoom(lh);
+      doc.text(line, marginX + indent, y);
+      y += lh;
+    });
+    y += after;
+  };
+
+  // ----- Cover header -----
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.setTextColor(15, 23, 42);
+  doc.text('InfinitySheets Worksheet', marginX, y);
+  y += 22;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(12);
+  doc.setTextColor(71, 85, 105);
+  const dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+  const topicStr = (topics || []).join(', ') || '-';
+  const metaLines = [
+    `${subject}  -  ${topicStr}`,
+    `Difficulty: ${difficulty}  -  Answer type: ${answerType}  -  Duration: ${duration} min  -  Questions: ${questions.length}`,
+    `Generated: ${dateStr}`,
+  ].map(sanitizeForPDF);
+  metaLines.forEach((m) => {
+    doc.text(m, marginX, y);
+    y += 15;
+  });
+  y += 4;
+
+  // Name / date fields for handwritten worksheets.
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.7);
+  const nameLabel = studentName ? `Name: ${sanitizeForPDF(studentName)}` : 'Name:';
+  doc.setFontSize(11);
+  doc.setTextColor(71, 85, 105);
+  doc.text(nameLabel, marginX, y);
+  doc.line(marginX + 46, y + 2, marginX + 260, y + 2);
+  doc.text('Score:', marginX + 300, y);
+  doc.line(marginX + 336, y + 2, pageWidth - marginX, y + 2);
+  y += 22;
+
+  // Separator.
+  doc.setDrawColor(30, 41, 59);
+  doc.setLineWidth(0.9);
+  doc.line(marginX, y, pageWidth - marginX, y);
+  y += 20;
+
+  // ----- Questions -----
+  const optionLabels = ['A', 'B', 'C', 'D', 'E', 'F'];
+  questions.forEach((q, idx) => {
+    ensureRoom(80);
+    writeWrapped(`${idx + 1}. ${q.q}`, { size: 12, style: 'bold', after: 4 });
+
+    if (q.answerType === 'Multiple choice' && Array.isArray(q.options)) {
+      q.options.forEach((opt, oi) => {
+        writeWrapped(`${optionLabels[oi] || String(oi + 1)}) ${opt}`, {
+          size: 11,
+          indent: 20,
+          color: [51, 65, 85],
+          after: 2,
+        });
+      });
+      y += 6;
+    } else if (q.answerType === 'Typed response') {
+      // A single answer line.
+      ensureRoom(28);
+      doc.setDrawColor(203, 213, 225);
+      doc.setLineWidth(0.6);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.setTextColor(71, 85, 105);
+      doc.text('Answer:', marginX + 4, y + 10);
+      doc.line(marginX + 52, y + 12, pageWidth - marginX, y + 12);
+      y += 26;
+    } else {
+      // Exam style — lined answer box (~6 lines).
+      ensureRoom(120);
+      const rows = 6;
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.5);
+      for (let r = 0; r < rows; r++) {
+        const ly = y + (r + 1) * 16;
+        doc.line(marginX + 4, ly, pageWidth - marginX, ly);
+      }
+      y += rows * 16 + 10;
+    }
+    y += 4;
+  });
+
+  // ----- Answer key -----
+  doc.addPage();
+  y = marginTop;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(15, 23, 42);
+  doc.text('Answer key', marginX, y);
+  y += 22;
+  doc.setDrawColor(30, 41, 59);
+  doc.setLineWidth(0.9);
+  doc.line(marginX, y, pageWidth - marginX, y);
+  y += 18;
+
+  const numColX = marginX;
+  const ansColX = marginX + 32;
+  const ansWidth = contentWidth - 32;
+  doc.setFontSize(11);
+  questions.forEach((q, idx) => {
+    let answer;
+    if (q.answerType === 'Multiple choice' && Array.isArray(q.options)) {
+      const label = optionLabels[q.a] || String((q.a ?? 0) + 1);
+      answer = `${label}) ${q.options[q.a] ?? ''}`;
+    } else if (q.answerType === 'Typed response') {
+      const aliases = (q.typedAliases || []).filter(Boolean);
+      answer = q.typedAnswer + (aliases.length ? `  -  also accepts: ${aliases.join(', ')}` : '');
+    } else {
+      const kws = (q.examKeywords || []).filter(Boolean);
+      answer = kws.length ? `Key ideas: ${kws.join(', ')}` : 'Open response - mark on quality of reasoning.';
+    }
+    const cleanAnswer = sanitizeForPDF(answer);
+    const answerLines = doc.splitTextToSize(cleanAnswer, ansWidth);
+    const lh = 11 * 1.35;
+    const blockH = answerLines.length * lh;
+    ensureRoom(blockH + 4);
+    // Number label — bold, on the first answer line.
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(15, 23, 42);
+    doc.text(`${idx + 1}.`, numColX, y);
+    // Answer text.
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(51, 65, 85);
+    answerLines.forEach((line, li) => {
+      doc.text(line, ansColX, y + li * lh);
+    });
+    y += blockH + 4;
+  });
+
+  const safeName = (subject || 'worksheet').replace(/\W+/g, '_').slice(0, 40).toLowerCase();
+  const stamp = new Date().toISOString().slice(0, 10);
+  doc.save(`infinitysheets_${safeName}_${stamp}.pdf`);
 }
 
 /* ================== Main component ================== */
@@ -235,6 +460,37 @@ export default function Worksheets({ go }) {
     setStartTime(Date.now());
     setTimeLeft(duration * 60);
     setStage('take');
+  };
+
+  // Same validation + question build as `start`, but instead of entering
+  // the interactive stage, this hands the questions to jsPDF and downloads
+  // the printable worksheet + answer key. No progress is recorded.
+  const downloadPDF = () => {
+    if (!subject) { toast.error('Select a subject'); return; }
+    if (!topics.length) { toast.error('Select at least one topic'); return; }
+    if (!pastPapers && !aiGenerated) { toast.error('Pick past papers, AI generated, or both'); return; }
+    if (pastPapers && !aiGenerated && ppAvailable === 0) {
+      toast.error('No past-paper questions match this selection. Ask an admin to upload some, or also tick AI generated.');
+      return;
+    }
+    const length = Math.max(3, Math.min(30, Math.round(duration / 3)));
+    const qs = buildQuestions({ topics, answerType, difficulty, length, pastPapers, aiGenerated, pastPaperPool });
+    try {
+      downloadWorksheetPDF({
+        questions: qs,
+        subject,
+        topics,
+        difficulty,
+        answerType,
+        duration,
+        studentName: state.user?.name || '',
+      });
+      toast.success('PDF ready \u2014 check your downloads folder.');
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('PDF export failed', err);
+      toast.error('Could not generate PDF. Please try again.');
+    }
   };
 
   const gradeOne = (q, given) => {
@@ -609,7 +865,16 @@ export default function Worksheets({ go }) {
         </div>
       </div>
 
-      <button onClick={start} data-testid="ws-start" className="btn-violet mt-5 px-5 py-3 rounded-lg text-[14px] font-medium">Create interactive worksheet</button>
+      <div className="mt-5 flex flex-wrap gap-3">
+        <button onClick={start} data-testid="ws-start" className="btn-violet px-5 py-3 rounded-lg text-[14px] font-medium">Create interactive worksheet</button>
+        <button
+          onClick={downloadPDF}
+          data-testid="ws-download-pdf"
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-lg text-[14px] font-medium bg-white text-slate-800 border border-slate-300 hover:border-blue-500 hover:text-blue-700 transition-colors"
+        >
+          <Download className="w-4 h-4" /> Download as PDF
+        </button>
+      </div>
     </div>
   );
 }
